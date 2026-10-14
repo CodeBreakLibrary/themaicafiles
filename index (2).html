@@ -1,0 +1,2414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>For Maica — the archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500&family=Barlow+Condensed:wght@400;500&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0C0E; --panel:#14161A; --panel2:#1B1E24; --edge:#2A2E36;
+    --red:#E4262B; --white:#F3F3F1; --text:#C9CCD3; --muted:#8C929C;
+    --purple:#B58CFF; --green:#2FE38C; --yellow:#E8C84A; --blue:#6FB7FF;
+  }
+  *{ box-sizing:border-box; }
+  html{ background:var(--bg); }
+  body{
+    margin:0; min-height:100vh;
+    font-family:'Barlow',sans-serif; font-weight:400; color:var(--text);
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(228,38,43,0.16), transparent 55%),
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.016) 0 2px, transparent 2px 7px),
+      var(--bg);
+    padding:calc(24px + env(safe-area-inset-top,0px)) 20px calc(64px + env(safe-area-inset-bottom,0px));
+  }
+  .wrap{ max-width:1040px; margin:0 auto; }
+  .flag{
+    height:16px; border:1px solid var(--edge);
+    background:conic-gradient(#F3F3F1 25%, #0B0C0E 0 50%, #F3F3F1 0 75%, #0B0C0E 0) 0 0/16px 16px;
+  }
+  button{ font-weight:400; }
+
+  /* ---------- header ---------- */
+  header{ text-align:center; padding:38px 0 44px; }
+  .gantry{
+    display:inline-flex; gap:8px; padding:10px 12px; margin:0 auto;
+    background:#0D0E11; border:1px solid var(--edge); border-radius:8px; cursor:pointer; position:relative;
+  }
+  .gantry:focus-visible{ outline:2px solid var(--white); outline-offset:4px; }
+  .gantry::before{
+    content:""; position:absolute; left:50%; bottom:100%; width:2px; height:30px;
+    background:var(--edge); transform:translateX(-50%);
+  }
+  .col{ display:flex; flex-direction:column; gap:7px; padding:7px; background:#1A1C21; border-radius:5px; }
+  .col i{
+    display:block; width:20px; height:20px; border-radius:50%;
+    background:#2B1112; box-shadow:inset 0 2px 4px rgba(0,0,0,.7);
+    transition:background .08s, box-shadow .08s;
+  }
+  .col.on i{ background:#FF2D2D; box-shadow:0 0 14px 3px rgba(255,45,45,.7), inset 0 0 6px rgba(255,200,200,.6); }
+  h1{
+    margin:30px 0 0; font-family:'Barlow Condensed',sans-serif; font-weight:500;
+    font-size:clamp(44px,11vw,80px); line-height:1; letter-spacing:.06em; text-transform:uppercase; color:var(--white);
+  }
+  h1 em{ font-style:normal; color:var(--red); }
+  .sub{ margin:14px auto 0; max-width:420px; font-size:clamp(16px,4vw,19px); line-height:1.5; color:var(--muted); text-wrap:balance; }
+
+  /* ---------- layout ---------- */
+  .grid{ display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:28px; align-items:start; }
+  .side{ position:sticky; top:20px; }
+  @media (max-width:860px){
+    .grid{ grid-template-columns:1fr; }
+    .side{ order:-1; position:static; }
+  }
+
+  /* ---------- timing tower ---------- */
+  .tower{ background:var(--panel); border:1px solid var(--edge); }
+  .tower-head{
+    display:flex; justify-content:space-between; padding:11px 16px;
+    font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:.08em; color:var(--muted);
+    border-bottom:1px solid var(--red);
+  }
+  .rows{ list-style:none; margin:0; padding:0; }
+  .row{ border-bottom:1px solid var(--edge); }
+  .row:last-child{ border-bottom:0; }
+  .rowbtn{
+    position:relative; width:100%; display:grid; grid-template-columns:30px 12px minmax(0,1fr) auto; gap:12px; align-items:center;
+    padding:14px 16px; background:transparent; color:inherit; border:0; text-align:left; cursor:pointer; font:inherit;
+  }
+  .rowbtn:hover{ background:rgba(255,255,255,.04); }
+  .rowbtn:focus-visible{ outline:2px solid var(--white); outline-offset:-2px; }
+  .row.open .rowbtn{ background:var(--panel2); }
+  .row.open .rowbtn::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--red); }
+  .pos{ font-family:'Barlow Condensed',sans-serif; font-weight:400; font-size:24px; text-align:center; line-height:1; color:var(--muted); }
+  .row.open .pos{ color:var(--white); }
+  .tyre{ width:12px; height:12px; border-radius:50%; border:3px solid var(--tc); background:#0B0C0E; }
+  .name{ font-family:'Barlow Condensed',sans-serif; font-weight:500; font-size:22px; line-height:1.1; letter-spacing:.02em; color:var(--white); overflow-wrap:anywhere; }
+  .chips{ display:flex; gap:6px; flex-wrap:wrap; margin-top:5px; }
+  .chip{ font-family:'Share Tech Mono',monospace; font-size:11px; padding:0 7px; letter-spacing:.04em; border:1px solid var(--edge); color:var(--muted); }
+  .chip.purple{ color:var(--purple); border-color:rgba(181,140,255,.4); }
+  .chip.yellow{ color:var(--yellow); border-color:rgba(232,200,74,.4); }
+  .time{ font-family:'Share Tech Mono',monospace; font-size:13px; color:var(--muted); text-align:right; }
+  .panel{ background:var(--panel2); padding:0 16px 18px 70px; }
+  .panel[hidden]{ display:none; }
+  .pbody{ display:flex; gap:16px; align-items:flex-start; justify-content:space-between; }
+  .note{ margin:0 0 14px; font-size:17px; line-height:1.5; color:var(--text); }
+  .cam{ flex:none; width:88px; margin:2px 0 0; padding:4px; background:#0D0E11; border:1px solid var(--edge); }
+  .cam img{ display:block; width:100%; aspect-ratio:4/5; object-fit:cover; }
+  .pitnote{ font-size:15px; color:var(--yellow); }
+  @media (max-width:520px){
+    .rowbtn{ grid-template-columns:26px 12px minmax(0,1fr); }
+    .time{ grid-column:3; text-align:left; margin-top:-8px; }
+    .panel{ padding-left:16px; }
+    .pbody{ flex-direction:column-reverse; }
+  }
+
+  .btn{
+    display:inline-block; font-family:'Barlow Condensed',sans-serif; font-weight:500; font-size:18px;
+    letter-spacing:.04em; text-decoration:none;
+    padding:8px 18px; border:1px solid var(--edge); background:transparent; color:var(--white); cursor:pointer; border-radius:0;
+  }
+  .btn:hover{ background:rgba(255,255,255,.07); }
+  .btn.primary{ background:var(--red); border-color:var(--red); }
+  .btn.primary:hover{ background:#F23A3F; }
+  .btn:focus-visible{ outline:2px solid var(--white); outline-offset:3px; }
+  .btn:disabled{ opacity:.35; cursor:default; }
+  .btn.sm{ font-size:16px; padding:4px 12px; }
+  .btn.danger{ border-color:rgba(228,38,43,.7); color:#FF9B9E; }
+  .tools{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; padding-top:14px; border-top:1px dashed var(--edge); }
+
+  /* entrance: only when JS arms the tower, so content is never hidden if scripts fail */
+  .tower.armed .row{ opacity:0; }
+  .tower.armed.go .row{ animation:slidein .5s var(--d,0ms) both cubic-bezier(.2,.8,.2,1); }
+  @keyframes slidein{ from{ opacity:0; transform:translateX(-24px); } to{ opacity:1; transform:none; } }
+
+  /* ---------- track ---------- */
+  .trackcard{ background:var(--panel); border:1px solid var(--edge); }
+  .hud{ padding:11px 16px; border-bottom:1px solid var(--red); }
+  .lap{ font-family:'Share Tech Mono',monospace; font-size:13px; letter-spacing:.08em; color:var(--muted); }
+  svg{ display:block; width:100%; height:auto; }
+  .kerb-w{ fill:none; stroke:#F3F3F1; stroke-width:20; stroke-dasharray:6 6; stroke-linejoin:round; }
+  .kerb-r{ fill:none; stroke:var(--red); stroke-width:20; stroke-dasharray:6 6; stroke-dashoffset:6; stroke-linejoin:round; }
+  .asphalt{ fill:none; stroke:#2B2F37; stroke-width:15; stroke-linejoin:round; }
+  .centre{ fill:none; stroke:#fff; stroke-opacity:.22; stroke-width:1; stroke-dasharray:4 6; }
+  .mk{ cursor:pointer; outline:none; }
+  .mk circle{ fill:#0B0C0E; stroke:var(--tc); stroke-width:3; }
+  .mk text{ font-family:'Barlow Condensed',sans-serif; font-weight:500; font-size:11px; fill:#fff; text-anchor:middle; dominant-baseline:central; pointer-events:none; }
+  .mk:hover circle{ stroke-width:5; }
+  .mk.active circle{ fill:var(--tc); }
+  .mk.active text{ fill:#000; }
+  .mk:focus-visible circle{ stroke:#fff; stroke-width:5; }
+  .trackfoot{ padding:12px 16px 16px; }
+
+  .empty{ margin:0; padding:26px 16px; text-align:center; font-size:16px; color:var(--muted); }
+
+  /* ---------- real F1 data ---------- */
+  .f1{ margin-top:28px; background:var(--panel); border:1px solid var(--edge); }
+  .f1-head{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; padding:14px 18px; border-bottom:1px solid var(--red); }
+  .f1-head h2{ margin:0; font-family:'Barlow Condensed',sans-serif; font-weight:500; font-size:26px; letter-spacing:.04em; color:var(--white); }
+  .meta{ font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:.04em; color:var(--muted); }
+  .dot{ display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:7px; background:var(--green); vertical-align:middle; }
+  .dot.off{ background:var(--muted); }
+  .next{ padding:12px 18px; border-bottom:1px solid var(--edge); font-size:16px; line-height:1.5; color:var(--muted); }
+  .next[hidden]{ display:none; }
+  .next span{ color:var(--white); }
+  .tabs{ display:flex; gap:4px; padding:10px 18px 0; }
+  .tab{
+    font-family:'Barlow Condensed',sans-serif; font-weight:500; font-size:18px; letter-spacing:.03em;
+    background:transparent; color:var(--muted); border:0; border-bottom:2px solid transparent; padding:6px 10px; cursor:pointer;
+  }
+  .tab:hover{ color:var(--text); }
+  .tab[aria-pressed="true"]{ color:var(--white); border-bottom-color:var(--red); }
+  .tab:focus-visible{ outline:2px solid var(--white); outline-offset:2px; }
+  .racehead{ margin:6px 18px 0; font-size:15px; line-height:1.5; color:var(--muted); }
+  .list{ list-style:none; margin:0; padding:6px 18px 8px; columns:2 320px; column-gap:40px; }
+  .item{
+    position:relative; break-inside:avoid; display:grid; grid-template-columns:28px minmax(0,1fr) auto; gap:10px; align-items:baseline;
+    padding:11px 0 14px; border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .item .p{ font-family:'Share Tech Mono',monospace; font-size:13px; color:var(--muted); }
+  .item .n{ font-size:18px; color:var(--white); overflow-wrap:anywhere; }
+  .item .n small{ display:block; margin-top:1px; font-size:14px; color:var(--muted); }
+  .item .v{ font-family:'Share Tech Mono',monospace; font-size:14px; color:var(--text); text-align:right; }
+  .item .bar{ position:absolute; left:38px; right:0; bottom:6px; height:2px; background:rgba(255,255,255,.07); }
+  .item .bar::after{ content:""; position:absolute; inset:0 auto 0 0; width:var(--w); background:var(--red); opacity:.85; }
+  .f1foot{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:6px 18px 16px; }
+  .src{ margin:0; font-size:13px; color:var(--muted); }
+
+  /* ---------- compare drivers ---------- */
+  .cmp{ }
+  .cmp-pick{ display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:14px 18px 0; }
+  @media (max-width:560px){ .cmp-pick{ grid-template-columns:1fr; } }
+  .cmp-pick label{ display:grid; gap:5px; font-size:14px; color:var(--muted); }
+  .cmp-pick label span{ display:flex; align-items:center; gap:8px; }
+  .sw{ display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--red); }
+  .sw.b{ background:var(--blue); border-radius:2px; }
+  .cmp-pick input{
+    font-family:'Barlow',sans-serif; font-size:17px; color:var(--white); background:#0D0E11;
+    border:1px solid var(--edge); padding:8px 10px; width:100%; border-radius:0;
+  }
+  .cmp-pick input:focus-visible{ outline:2px solid var(--red); outline-offset:1px; }
+  .cmp-ctl{ display:flex; flex-wrap:wrap; column-gap:28px; }
+  .cmp-note{ margin:14px 18px 0; font-size:15px; line-height:1.5; color:var(--muted); }
+  .cmp-note[hidden]{ display:none; }
+  .chart{ padding:8px 10px 0; }
+  .chart .gl{ stroke:rgba(255,255,255,.08); stroke-width:1; }
+  .chart .tx{ fill:var(--muted); font-family:'Share Tech Mono',monospace; font-size:11px; }
+  .chart .la{ fill:none; stroke:var(--red); stroke-width:2; stroke-linejoin:round; }
+  .chart .lb{ fill:none; stroke:var(--blue); stroke-width:2; stroke-linejoin:round; }
+  .chart .da{ fill:var(--red); } .chart .db{ fill:var(--blue); }
+  .chart .guide{ stroke:rgba(255,255,255,.3); stroke-width:1; stroke-dasharray:3 4; }
+  .readout{ margin:2px 18px 0; min-height:24px; font-family:'Share Tech Mono',monospace; font-size:13px; line-height:1.5; color:var(--text); }
+  .cmpt{ width:calc(100% - 36px); margin:12px 18px 6px; border-collapse:collapse; }
+  .cmpt th{ padding:8px 0; border-bottom:1px solid var(--edge); font-weight:400; font-size:16px; color:var(--white); text-align:right; }
+  .cmpt th:first-child, .cmpt td:first-child{ text-align:left; }
+  .cmpt th .sw{ margin-right:7px; }
+  .cmpt td{ padding:9px 0 9px 12px; border-bottom:1px solid rgba(255,255,255,.06); text-align:right; font-family:'Share Tech Mono',monospace; font-size:14px; color:var(--muted); }
+  .cmpt td:first-child{ padding-left:0; font-family:'Barlow',sans-serif; font-size:16px; color:var(--text); }
+  .cmpt td.lead{ color:var(--white); }
+  .sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .cmp-foot{ padding:6px 18px 16px; }
+
+  /* ---------- tyre & pit strategy ---------- */
+  .strat{ margin-top:28px; }
+  .ctrls{ display:flex; flex-wrap:wrap; gap:12px 18px; padding:14px 18px; border-bottom:1px solid var(--edge); }
+  .ctrls label{ display:grid; gap:4px; font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:.06em; color:var(--muted); }
+  .ctrls select, .ctrls input{
+    font-family:'Barlow',sans-serif; font-size:16px; color:var(--white); background:#0D0E11;
+    border:1px solid var(--edge); padding:6px 8px; border-radius:0; min-width:150px; max-width:100%;
+  }
+  .ctrls input[type=number]{ min-width:0; width:92px; }
+  .ctrls select:focus-visible, .ctrls input:focus-visible{ outline:2px solid var(--red); outline-offset:1px; }
+  .stbody{ padding:0 0 6px; }
+  .stmsg{ margin:0; padding:26px 18px; text-align:center; font-size:16px; color:var(--muted); }
+  .legend{ display:flex; flex-wrap:wrap; gap:6px 16px; padding:12px 18px 4px; font-size:14px; color:var(--muted); }
+  .legend i{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:-1px; }
+  .axis{ position:relative; height:18px; margin:4px 18px 0 82px; }
+  .axis span{ position:absolute; top:0; transform:translateX(-50%); font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--muted); }
+  .srow{
+    display:grid; grid-template-columns:64px minmax(0,1fr); gap:0 0; align-items:center; width:100%;
+    padding:5px 18px; background:transparent; border:0; border-bottom:1px solid rgba(255,255,255,.05);
+    color:inherit; text-align:left; cursor:pointer; font:inherit;
+  }
+  .srow:hover{ background:rgba(255,255,255,.04); }
+  .srow:focus-visible{ outline:2px solid var(--white); outline-offset:-2px; }
+  .srow[aria-pressed="true"]{ background:var(--panel2); box-shadow:inset 3px 0 var(--red); }
+  .who{ display:flex; align-items:center; gap:7px; font-family:'Share Tech Mono',monospace; font-size:13px; color:var(--white); }
+  .who i{ display:block; width:3px; height:16px; background:var(--tc); }
+  .strack{ position:relative; height:20px; background:rgba(255,255,255,.04); }
+  .seg{
+    position:absolute; top:0; bottom:0; border-right:2px solid var(--panel);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    font-family:'Share Tech Mono',monospace; font-size:11px; color:#111;
+  }
+  .sdetail{ background:var(--panel2); border-top:1px solid var(--edge); padding:16px 18px 20px; }
+  .sdetail h3{ margin:0; font-family:'Barlow Condensed',sans-serif; font-weight:500; font-size:24px; letter-spacing:.03em; color:var(--white); }
+  .sdetail .sub2{ margin:2px 0 10px; font-size:15px; color:var(--muted); }
+  .lapchart{ display:block; width:100%; height:auto; }
+  .lapchart text{ font-family:'Share Tech Mono',monospace; font-size:11px; fill:var(--muted); }
+  .sttable{ list-style:none; margin:12px 0 0; padding:0; font-size:15px; }
+  .sttable li{ display:flex; flex-wrap:wrap; gap:2px 14px; align-items:baseline; padding:7px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+  .sttable .tyc{ display:inline-flex; align-items:center; gap:7px; color:var(--white); }
+  .sttable .tyc i{ display:inline-block; width:10px; height:10px; border-radius:50%; }
+  .sttable .dim{ color:var(--muted); }
+  .sttable .pit{ color:var(--yellow); font-size:14px; border-bottom:0; padding:2px 0 7px 17px; }
+  .est{ margin-top:22px; padding-top:16px; border-top:1px dashed var(--edge); }
+  .est h4{ margin:0 0 2px; font-family:'Barlow Condensed',sans-serif; font-weight:500; font-size:21px; letter-spacing:.03em; color:var(--white); }
+  .est .ctrls{ padding:0; border:0; margin:12px 0 14px; }
+  .estout p{ margin:0 0 6px; font-size:16px; line-height:1.5; color:var(--text); }
+  .estout em{ font-style:normal; color:var(--white); }
+  .estout .dim{ font-size:14px; color:var(--muted); }
+  .fine{ margin:10px 0 0; font-size:13px; line-height:1.5; color:var(--muted); }
+
+  /* ---------- lap comparison ---------- */
+  .lc{ margin-top:28px; --lcA:#E4262B; --lcB:#4AA8FF; }
+  .lc-sw{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:-1px; }
+  .lc-note{ margin:10px 18px 0; font-size:14px; color:var(--muted); }
+  .lc-top{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; padding:16px 18px 0; align-items:start; }
+  @media (max-width:700px){ .lc-top{ grid-template-columns:1fr; } }
+  .lc-map svg{ display:block; width:100%; height:auto; background:#101216; }
+  .lc-cap{ margin:6px 0 0; font-size:13px; line-height:1.4; color:var(--muted); }
+  .lc-t{ width:100%; border-collapse:collapse; }
+  .lc-t th{ padding:6px 0; border-bottom:1px solid var(--edge); font-weight:400; font-size:16px; color:var(--white); text-align:right; }
+  .lc-t th:first-child, .lc-t td:first-child{ text-align:left; }
+  .lc-t td{ padding:8px 0 8px 10px; border-bottom:1px solid rgba(255,255,255,.06); text-align:right; font-family:'Share Tech Mono',monospace; font-size:14px; color:var(--muted); }
+  .lc-t td:first-child{ padding-left:0; font-family:'Barlow',sans-serif; font-size:15px; color:var(--text); }
+  .lc-t td.lead{ color:var(--white); }
+  .lc-sum{ margin:12px 0 0; font-size:16px; line-height:1.5; color:var(--text); }
+  .lc-read{ margin:14px 18px 0; min-height:42px; font-family:'Share Tech Mono',monospace; font-size:13px; line-height:1.55; color:var(--text); }
+  .lc-charts{ padding:0 10px 6px; }
+  .lc-charts svg{ display:block; width:100%; height:auto; touch-action:pan-y; }
+  .lc-charts svg:focus-visible{ outline:2px solid var(--white); outline-offset:2px; }
+  .lc-charts text{ font-family:'Share Tech Mono',monospace; font-size:11px; fill:var(--muted); }
+
+  /* ---------- stat search ---------- */
+  .sq{ margin-top:28px; }
+  .sq-form{ display:flex; flex-wrap:wrap; gap:10px; padding:16px 18px 0; }
+  .sq-form input{
+    flex:1 1 260px; min-width:0; font-family:'Barlow',sans-serif; font-size:18px; color:var(--white); background:#0D0E11;
+    border:1px solid var(--edge); padding:10px 12px; border-radius:0;
+  }
+  .sq-form input:focus-visible{ outline:2px solid var(--red); outline-offset:1px; }
+  .sq-ex{ display:flex; flex-wrap:wrap; gap:6px 8px; padding:12px 18px 0; }
+  .sq-eg{ font-family:'Barlow',sans-serif; font-size:14px; color:var(--muted); background:transparent; border:1px solid var(--edge); padding:3px 11px; cursor:pointer; border-radius:999px; }
+  .sq-eg:hover{ color:var(--white); border-color:var(--muted); }
+  .sq-eg:focus-visible, .sq-chip button:focus-visible{ outline:2px solid var(--white); outline-offset:2px; }
+  .sq-chips{ display:flex; flex-wrap:wrap; gap:6px 8px; padding:14px 18px 0; }
+  .sq-chips[hidden]{ display:none; }
+  .sq-chip{ display:inline-flex; align-items:center; gap:2px; padding:2px 4px 2px 10px; border:1px solid var(--edge); background:var(--panel2); font-size:14px; color:var(--white); }
+  .sq-chip small{ margin-right:6px; font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:.04em; color:var(--muted); }
+  .sq-chip button{ background:transparent; border:0; color:var(--muted); font-size:18px; line-height:1; padding:0 6px; cursor:pointer; }
+  .sq-chip button:hover{ color:var(--white); }
+  .sq-out{ padding:6px 18px 4px; }
+  .sq-cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0 28px; }
+  .sq-card{ padding:14px 0 6px; }
+  .sq-head{ font-family:'Barlow Condensed',sans-serif; font-weight:500; font-size:22px; letter-spacing:.03em; color:var(--white); }
+  .sq-big{ margin:2px 0 0; font-family:'Barlow Condensed',sans-serif; font-weight:500; font-size:58px; line-height:1.05; color:var(--white); overflow-wrap:anywhere; }
+  .sq-big.txt{ font-size:36px; }
+  .sq-sent{ margin:2px 0 8px; font-size:17px; line-height:1.5; color:var(--text); }
+  .sq-bh{ margin:14px 0 2px; font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:.06em; color:var(--muted); }
+  .sq-t{ width:100%; border-collapse:collapse; }
+  .sq-t td{ padding:7px 0; border-bottom:1px solid rgba(255,255,255,.06); font-size:16px; color:var(--text); }
+  .sq-t td:first-child{ color:var(--white); padding-right:10px; }
+  .sq-t td.m{ color:var(--muted); font-size:14px; padding-right:10px; }
+  .sq-t td.v{ text-align:right; font-family:'Share Tech Mono',monospace; font-size:14px; color:var(--white); white-space:nowrap; }
+  .sq-t tr.more{ display:none; }
+  .sq-open .sq-t tr.more{ display:table-row; }
+  .sq-note{ margin:10px 18px 0; font-size:14px; line-height:1.5; color:var(--yellow); }
+  .sq-wait{ margin:0; padding:22px 18px 16px; text-align:center; font-size:16px; color:var(--muted); }
+
+  footer{ margin-top:40px; text-align:center; }
+  #count{ margin:18px 0 0; font-size:15px; color:var(--muted); }
+
+  /* ---------- keeper mode ---------- */
+  .desk{ margin:0 0 28px; padding:18px 20px; border:1px dashed var(--red); background:rgba(228,38,43,.06); }
+  .desk strong{ display:block; margin-bottom:6px; font-family:'Share Tech Mono',monospace; font-weight:400; font-size:12px; letter-spacing:.1em; color:var(--red); }
+  .desk p{ margin:0 0 14px; font-size:16px; line-height:1.45; color:var(--text); }
+  .btnrow{ display:flex; flex-wrap:wrap; gap:10px; }
+  .toast{
+    position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%) translateY(20px);
+    background:var(--white); color:#111; padding:10px 18px; font-size:16px; box-shadow:0 10px 30px rgba(0,0,0,.6);
+    opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:50; max-width:90vw; text-align:center;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  dialog{ width:min(92vw,520px); padding:0; border:1px solid var(--red); background:var(--panel); color:var(--text); box-shadow:0 30px 80px rgba(0,0,0,.7); }
+  dialog::backdrop{ background:rgba(5,6,8,.8); }
+  dialog form{ padding:24px; display:grid; gap:14px; }
+  dialog h3{ margin:0; font-family:'Barlow Condensed',sans-serif; font-weight:500; font-size:28px; letter-spacing:.03em; color:var(--white); }
+  dialog label{ display:grid; gap:4px; font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:.06em; color:var(--muted); }
+  dialog input[type=text], dialog textarea{
+    font-family:'Barlow',sans-serif; font-size:17px; color:var(--white); background:#0D0E11;
+    border:1px solid var(--edge); padding:8px 10px; width:100%; border-radius:0;
+  }
+  dialog textarea{ min-height:84px; resize:vertical; }
+  dialog input:focus-visible, dialog textarea:focus-visible{ outline:2px solid var(--red); outline-offset:1px; }
+  dialog .dhint{ display:block; margin-top:6px; font-size:14px; color:var(--muted); }
+  .imgrow{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .imgrow img{ width:56px; height:70px; object-fit:cover; border:3px solid #0D0E11; outline:1px solid var(--edge); }
+  .dlgbtns{ display:flex; justify-content:flex-end; gap:10px; margin-top:4px; }
+
+  /* website code box and viewer */
+  dialog:not(.viewer){ max-height:94dvh; overflow:auto; }
+  .codebox{ display:grid; gap:6px; }
+  .codebox .lbl{ font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:.06em; color:var(--muted); }
+  .codebox .lbl em{ font-style:normal; color:#6f7580; }
+  .codebox textarea{
+    min-height:110px; max-height:240px; resize:vertical; white-space:pre; overflow:auto; tab-size:2;
+    font-family:'Share Tech Mono',monospace; font-size:12.5px; line-height:1.5; color:#C9CCD3;
+  }
+  .dwarn{ margin:0; font-size:14px; line-height:1.45; color:var(--yellow); }
+  .dwarn[hidden]{ display:none; }
+  .viewer{ width:100vw; max-width:none; height:100dvh; max-height:none; margin:0; padding:0; border:0; background:#000; }
+  .viewer[open]{ display:flex; flex-direction:column; }
+  .viewer::backdrop{ background:#000; }
+  .vbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:calc(8px + env(safe-area-inset-top,0px)) 14px 8px; background:var(--panel); border-bottom:1px solid var(--red); }
+  .vbar .vt{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:'Barlow Condensed',sans-serif; font-weight:500; font-size:20px; letter-spacing:.03em; color:var(--white); }
+  .vbar .vb{ display:flex; gap:8px; flex:none; }
+  .viewer iframe{ flex:1; width:100%; min-height:0; border:0; background:#fff; }
+
+
+  /* ---------- christmas teaser ---------- */
+  .radio{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:14px; padding:11px 14px; background:var(--panel); border:1px solid var(--edge); border-left:3px solid var(--green); position:relative; }
+  .radio[hidden], #vTab[hidden], #fUrlWrap[hidden]{ display:none; }
+  .radio .tag{ font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:.08em; color:var(--green); display:flex; align-items:center; gap:7px; white-space:nowrap; }
+  .radio .tag i{ width:7px; height:7px; border-radius:50%; background:var(--green); animation:blip 1.6s ease-in-out infinite; }
+  @keyframes blip{ 50%{ opacity:.25; } }
+  .radio .msg{ flex:1 1 220px; font-size:15px; font-weight:300; color:var(--white); line-height:1.4; }
+  .radio .cd{ font-family:'Share Tech Mono',monospace; font-size:13px; color:var(--text); white-space:nowrap; letter-spacing:.04em; }
+  .radio .cd b{ font-weight:400; color:var(--white); font-size:16px; }
+  .radio .x{ background:none; border:0; color:var(--muted); font-size:18px; line-height:1; cursor:pointer; padding:4px 6px; }
+  .radio .x:hover{ color:var(--white); }
+  .radio .x:focus-visible{ outline:2px solid var(--white); }
+  @media (prefers-reduced-motion:reduce){ .radio .tag i{ animation:none; } }
+
+  @media (prefers-reduced-motion:reduce){
+    .tower.armed.go .row{ animation:none; }
+    .col i{ transition:none; }
+    .toast{ transition:none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="flag" aria-hidden="true"></div>
+
+  <div class="radio" id="radio" role="note" hidden>
+    <span class="tag"><i></i>TEAM RADIO</span>
+    <span class="msg" id="radioMsg"></span>
+    <span class="cd" id="radioCd" aria-live="off"></span>
+    <button class="x" id="radioX" type="button" aria-label="Dismiss message">&times;</button>
+  </div>
+
+  <header>
+    <button class="gantry" id="gantry" type="button" aria-label="Replay the race start">
+      <span class="col"><i></i><i></i></span>
+      <span class="col"><i></i><i></i></span>
+      <span class="col"><i></i><i></i></span>
+      <span class="col"><i></i><i></i></span>
+      <span class="col"><i></i><i></i></span>
+    </button>
+    <h1>The <em>archive</em></h1>
+    <p class="sub">every little website I've made for you, kept in one place.</p>
+  </header>
+
+  <div id="desk"></div>
+
+  <main class="grid">
+    <section class="tower" id="tower" aria-label="Websites">
+      <div class="tower-head"><span>websites</span><span>date</span></div>
+      <ol class="rows" id="rows"></ol>
+    </section>
+
+    <section class="side" aria-label="Circuit">
+      <div class="trackcard">
+        <div class="hud"><span class="lap" id="lap">lap -- / --</span></div>
+        <svg viewBox="0 0 400 290" role="img" aria-label="A race circuit. Each website is a numbered marker on the track.">
+          <path class="kerb-w" d="M90 235 C55 235 35 205 60 180 L105 140 C130 118 120 80 160 66 L250 48 C295 40 325 68 312 102 C302 128 330 140 348 168 C372 205 345 248 300 243 L190 238 C165 236 150 215 125 222 C110 227 105 235 90 235 Z"/>
+          <path class="kerb-r" d="M90 235 C55 235 35 205 60 180 L105 140 C130 118 120 80 160 66 L250 48 C295 40 325 68 312 102 C302 128 330 140 348 168 C372 205 345 248 300 243 L190 238 C165 236 150 215 125 222 C110 227 105 235 90 235 Z"/>
+          <path class="asphalt" id="trackPath" d="M90 235 C55 235 35 205 60 180 L105 140 C130 118 120 80 160 66 L250 48 C295 40 325 68 312 102 C302 128 330 140 348 168 C372 205 345 248 300 243 L190 238 C165 236 150 215 125 222 C110 227 105 235 90 235 Z"/>
+          <path class="centre" d="M90 235 C55 235 35 205 60 180 L105 140 C130 118 120 80 160 66 L250 48 C295 40 325 68 312 102 C302 128 330 140 348 168 C372 205 345 248 300 243 L190 238 C165 236 150 215 125 222 C110 227 105 235 90 235 Z"/>
+          <g id="startline"></g>
+          <g id="markers"></g>
+          <g id="car">
+            <circle r="11" fill="#E4262B" opacity=".28"/>
+            <circle r="5" fill="#fff" stroke="#E4262B" stroke-width="2.5"/>
+          </g>
+        </svg>
+        <div class="trackfoot">
+          <button class="btn primary" id="run" type="button">Run the lap</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <section class="f1" aria-label="Formula 1 standings">
+    <div class="f1-head">
+      <h2>The real grid</h2>
+      <span class="meta" id="f1meta">loading…</span>
+    </div>
+    <div class="next" id="next" hidden></div>
+    <div class="tabs" id="f1tabs">
+      <button type="button" class="tab" data-tab="drivers" aria-pressed="true">Drivers</button>
+      <button type="button" class="tab" data-tab="teams" aria-pressed="false">Teams</button>
+      <button type="button" class="tab" data-tab="race" aria-pressed="false">Last race</button>
+    </div>
+    <div id="f1body"></div>
+    <div class="f1foot">
+      <button type="button" class="btn sm" id="f1more" hidden>Show all</button>
+      <p class="src">Championship data from the Jolpica F1 API, refreshed when this page opens.</p>
+    </div>
+  </section>
+
+  <section class="f1 cmp" aria-label="Compare drivers">
+    <div class="f1-head">
+      <h2>Compare drivers</h2>
+      <span class="meta" id="cmpmeta"></span>
+    </div>
+    <div class="cmp-pick">
+      <label><span><i class="sw"></i>Driver one</span>
+        <input type="text" id="cmpA" list="drvlist" autocomplete="off" placeholder="type a name">
+      </label>
+      <label><span><i class="sw b"></i>Driver two</span>
+        <input type="text" id="cmpB" list="drvlist" autocomplete="off" placeholder="type a name">
+      </label>
+    </div>
+    <datalist id="drvlist"></datalist>
+    <div class="cmp-ctl">
+      <div class="tabs" id="cmpMetric">
+        <button type="button" class="tab" data-metric="points" aria-pressed="true">Points</button>
+        <button type="button" class="tab" data-metric="wins" aria-pressed="false">Wins</button>
+        <button type="button" class="tab" data-metric="pos" aria-pressed="false">Position</button>
+      </div>
+      <div class="tabs" id="cmpRange">
+        <button type="button" class="tab" data-range="5" aria-pressed="true">Last 5 seasons</button>
+        <button type="button" class="tab" data-range="10" aria-pressed="false">Last 10</button>
+        <button type="button" class="tab" data-range="all" aria-pressed="false">All</button>
+      </div>
+    </div>
+    <p class="cmp-note" id="cmpNote" hidden></p>
+    <div id="cmpBody"></div>
+    <div class="cmp-foot">
+      <p class="src">Season and career data from the Jolpica F1 API. Points aren't comparable across eras because scoring changed, and poles come from qualifying records that can be incomplete for older seasons.</p>
+    </div>
+  </section>
+
+  <section class="f1 strat" aria-label="Tyre and pit strategy">
+    <div class="f1-head">
+      <h2>Tyre &amp; pit strategy</h2>
+      <span class="meta" id="stMeta"></span>
+    </div>
+    <div class="ctrls">
+      <label>RACE WEEKEND <select id="stMeeting"></select></label>
+      <label>SESSION <select id="stSession"></select></label>
+    </div>
+    <div class="stbody" id="stBody"></div>
+    <div class="f1foot">
+      <p class="src">Timing data from the OpenF1 API, loaded when you open this page. Tyre wear is an estimate from lap times, not an official figure.</p>
+    </div>
+  </section>
+
+  <section class="f1 lc" aria-label="Lap comparison">
+    <div class="f1-head">
+      <h2>Lap comparison</h2>
+      <span class="meta" id="lcMeta"></span>
+    </div>
+    <div class="ctrls">
+      <label><span><i class="lc-sw" style="background:var(--lcA)"></i>DRIVER ONE</span><select id="lcDA"></select></label>
+      <label>LAP<select id="lcLA"></select></label>
+      <label><span><i class="lc-sw" style="background:var(--lcB)"></i>DRIVER TWO</span><select id="lcDB"></select></label>
+      <label>LAP<select id="lcLB"></select></label>
+    </div>
+    <p class="lc-note">Uses the session picked in the tyre section above. Each lap starts on its fastest.</p>
+    <div id="lcBody"></div>
+    <div class="f1foot">
+      <p class="src">Car telemetry from the OpenF1 API, sampled a few times a second. Laps are lined up by distance covered, which is estimated from speed, so small differences are approximate.</p>
+    </div>
+  </section>
+
+  <section class="f1 sq" aria-label="Stat search">
+    <div class="f1-head">
+      <h2>Ask the record books</h2>
+      <span class="meta" id="sqMeta"></span>
+    </div>
+    <form class="sq-form" id="sqForm" autocomplete="off">
+      <input type="text" id="sqIn" maxlength="120" aria-label="Ask a question about Formula 1 results" placeholder="try: Hamilton wins 2024, Monaco poles, most titles">
+      <button type="submit" class="btn primary">Search</button>
+    </form>
+    <div class="sq-ex" id="sqEx"></div>
+    <div class="sq-chips" id="sqChips" hidden></div>
+    <div class="sq-out" id="sqOut" aria-live="polite"></div>
+    <div class="f1foot">
+      <p class="src">Results from the Jolpica F1 API. Pole counts come from qualifying records, which are patchy for older seasons, and fastest-lap data only covers more recent years.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="flag" aria-hidden="true"></div>
+    <p id="count"></p>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="dlg">
+  <form method="dialog" id="form">
+    <h3 id="dlgTitle">Add a website</h3>
+    <label>TITLE
+      <input type="text" id="fTitle" required maxlength="80" autocomplete="off">
+    </label>
+    <label>DATE
+      <input type="text" id="fDate" maxlength="40" placeholder="e.g. December 2026" autocomplete="off">
+    </label>
+    <label>NOTE
+      <textarea id="fNote" maxlength="300" placeholder="a line or two about it"></textarea>
+    </label>
+    <div class="codebox">
+      <span class="lbl">WEBSITE CODE <em>(paste it here and the archive will host it for you)</em></span>
+      <textarea id="fCode" spellcheck="false" autocomplete="off" aria-label="Website code" placeholder="Paste the whole page's code here, or upload the file below"></textarea>
+      <div class="imgrow">
+        <input type="file" id="fCodeFile" accept=".html,.htm,text/html" hidden>
+        <button type="button" class="btn sm" id="fCodePick">Upload an .html file</button>
+        <button type="button" class="btn sm" id="fCodeTry" hidden>Preview</button>
+        <button type="button" class="btn sm" id="fCodeClear" hidden>Remove code</button>
+      </div>
+      <span class="dhint" id="fCodeInfo"></span>
+      <p class="dwarn" id="fCodeWarn" hidden></p>
+    </div>
+    <label id="fUrlWrap" hidden>OLD LINK <em style="font-style:normal;color:#6f7580">(this one opens from an address. Paste its code above and clear this to keep everything in the archive)</em>
+      <input type="text" id="fUrl" placeholder="https://…" autocomplete="off" inputmode="url">
+    </label>
+    <div>
+      <div class="imgrow">
+        <img id="fPreview" alt="" hidden>
+        <input type="file" id="fFile" accept="image/*" hidden>
+        <button type="button" class="btn sm" id="fPick">Add a small photo</button>
+        <button type="button" class="btn sm" id="fClear" hidden>Remove photo</button>
+      </div>
+      <span class="dhint">Optional. It gets shrunk automatically.</span>
+    </div>
+    <div class="dlgbtns">
+      <button type="button" class="btn" id="fCancel">Cancel</button>
+      <button type="submit" class="btn primary" id="fSave">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="viewer" class="viewer" aria-label="Website viewer">
+  <div class="vbar">
+    <span class="vt" id="vTitle"></span>
+    <span class="vb">
+      <button type="button" class="btn sm" id="vTab">Open in its own tab</button>
+      <button type="button" class="btn sm primary" id="vClose">Close</button>
+    </span>
+  </div>
+  <iframe id="vFrame" title="Website" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"></iframe>
+</dialog>
+
+<script>
+  // =====================================================================
+  //  YOUR WEBSITES LIVE HERE. You normally don't need to touch this by hand:
+  //  open the page with  ?edit  on the end of the address, add things with
+  //  the buttons, then click "Download updated index.html" and upload that
+  //  file to GitHub in place of the old one.
+  //
+  //  Newest first. The top entry is P1.
+  //    title / date / note : text
+  //    url : the site's link ('' = not hosted yet, shows as "in the pit")
+  //    img : small photo as a data: address, or '' for none
+  // =====================================================================
+  /*DATA-START*/
+  const SITES = [
+    {
+      "title": "Merry Christmas Twin",
+      "date": "2026",
+      "note": "a candle, a list, a tree, a letter.",
+      "url": "",
+      "img": ""
+    },
+    {
+      "title": "Happy Birthday Maica!",
+      "date": "2026",
+      "note": "The first ever website I made you",
+      "url": "https://codebreaklibrary.github.io/happybirthdaymaica/",
+      "img": ""
+    }
+  ];
+  /*DATA-END*/
+
+  // ---------------------------------------------------------------------
+  const EDIT = new URLSearchParams(location.search).has('edit');
+  const KEY = 'maica-archive-draft-v1';
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const NS = 'http://www.w3.org/2000/svg';
+  const $ = id => document.getElementById(id);
+
+  let sites = JSON.parse(JSON.stringify(SITES));
+  let hasDraft = false;
+  if (EDIT) {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) { const d = JSON.parse(raw); if (Array.isArray(d)) { sites = d; hasDraft = true; } }
+    } catch (e) {}
+  }
+
+  let sel = sites.length ? 0 : -1;   // which row is open
+  let at  = 0;                       // which entry the car last drove to
+
+  const rows = $('rows'), tower = $('tower'), desk = $('desk'), toastEl = $('toast');
+
+  function toast(msg){
+    toastEl.textContent = msg; toastEl.classList.add('show');
+    clearTimeout(toast.t); toast.t = setTimeout(() => toastEl.classList.remove('show'), 2800);
+  }
+  function persist(){
+    hasDraft = true;
+    try { localStorage.setItem(KEY, JSON.stringify(sites)); }
+    catch (e) { toast('This browser could not keep the draft (too much code or too many photos). Download the updated file now so nothing is lost.'); }
+  }
+  function safeUrl(u){
+    u = (u || '').trim();
+    if (!u) return '';
+    if (/^(https?:)?\/\//i.test(u)) return u;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(u)) return '';   // blocks javascript: and friends
+    return 'https://' + u;
+  }
+  const siteHas = s => !!(s.html || safeUrl(s.url));      // something to open: pasted code, or a link
+  const vFrame = $('vFrame'), viewer = $('viewer');
+  let vHtml = '';
+  function openViewer(title, html, url){
+    vHtml = html || ''; $('vTitle').textContent = title || 'Website';
+    $('vTab').hidden = !html;                       // older entries that only have an address open in the viewer too
+    if (html) vFrame.srcdoc = html; else vFrame.src = url;
+    viewer.showModal(); $('vClose').focus();
+  }
+  $('vClose').addEventListener('click', () => viewer.close());
+  viewer.addEventListener('close', () => { vFrame.srcdoc = ''; vFrame.removeAttribute('src'); vHtml = ''; });       // stops any sound or video
+  $('vTab').addEventListener('click', () => {
+    const u = URL.createObjectURL(new Blob([vHtml], { type:'text/html' }));
+    const w = window.open(u, '_blank');
+    if (!w) toast('Your browser blocked the new tab. Allow pop-ups for this page and try again.');
+    setTimeout(() => URL.revokeObjectURL(u), 120000);
+  });
+  const TYRES = ['#E4262B', '#FFD60A', '#F3F3F1'];       // soft, medium, hard: stable per entry from the oldest up
+  const tyre = (i, n) => TYRES[(n - 1 - i) % 3];
+
+  /* ------------------------------ track ------------------------------ */
+  const trackPath = $('trackPath');
+  const L = trackPath.getTotalLength();
+  const ptAt = len => trackPath.getPointAtLength(((len % L) + L) % L);
+  let carLen = 0, raf = 0;
+
+  (function drawStartLine(){
+    const a = ptAt(0), b = ptAt(3);
+    const ang = Math.atan2(b.y - a.y, b.x - a.x) + Math.PI / 2;
+    const dx = Math.cos(ang) * 11, dy = Math.sin(ang) * 11;
+    const mk = (stroke, dash) => {
+      const l = document.createElementNS(NS, 'line');
+      l.setAttribute('x1', a.x - dx); l.setAttribute('y1', a.y - dy);
+      l.setAttribute('x2', a.x + dx); l.setAttribute('y2', a.y + dy);
+      l.setAttribute('stroke', stroke); l.setAttribute('stroke-width', '5');
+      if (dash) l.setAttribute('stroke-dasharray', dash);
+      return l;
+    };
+    $('startline').append(mk('#0B0C0E'), mk('#F3F3F1', '3 3'));
+  })();
+
+  function placeCar(){
+    const p = ptAt(carLen);
+    $('car').setAttribute('transform', `translate(${p.x} ${p.y})`);
+  }
+  function jumpTo(i){
+    cancelAnimationFrame(raf);
+    carLen = sites.length ? (i / sites.length) * L : 0;
+    placeCar();
+  }
+  function driveTo(i){
+    if (!sites.length) return;
+    const target = (i / sites.length) * L;
+    const cur = ((carLen % L) + L) % L;
+    const delta = ((target - cur) % L + L) % L;         // cars only drive forward
+    cancelAnimationFrame(raf);
+    if (reduce || delta < 1) { carLen = target; placeCar(); return; }
+    const from = carLen, dur = 450 + (delta / L) * 1900, t0 = performance.now();
+    const step = now => {
+      const k = Math.min(1, (now - t0) / dur);
+      const e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      carLen = from + delta * e; placeCar();
+      if (k < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+  }
+
+  function renderTrack(){
+    const mks = $('markers'); mks.textContent = '';
+    const n = sites.length;
+    sites.forEach((s, i) => {
+      const p = ptAt((i / n) * L);
+      const g = document.createElementNS(NS, 'g');
+      g.setAttribute('class', 'mk' + (i === at ? ' active' : ''));
+      g.setAttribute('transform', `translate(${p.x} ${p.y})`);
+      g.setAttribute('tabindex', '0'); g.setAttribute('role', 'button');
+      g.setAttribute('aria-label', `P${i + 1}: ${s.title || 'Untitled'}`);
+      g.style.setProperty('--tc', tyre(i, n));
+      const tt = document.createElementNS(NS, 'title'); tt.textContent = s.title || 'Untitled';
+      const c = document.createElementNS(NS, 'circle'); c.setAttribute('r', '10');
+      const t = document.createElementNS(NS, 'text'); t.textContent = i + 1;
+      g.append(tt, c, t);
+      g.addEventListener('click', () => toggle(i, false));
+      g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(i, false); } });
+      mks.append(g);
+    });
+    placeCar();
+  }
+
+  function updateHud(){
+    const n = sites.length, pad = v => String(v).padStart(2, '0');
+    $('lap').textContent = n ? `lap ${pad(at + 1)} / ${pad(n)}` : 'lap -- / --';
+    $('run').disabled = !n;
+  }
+
+  /* ------------------------------ tower ------------------------------ */
+  function buildPanel(s, i){
+    const url = safeUrl(s.url);
+    const p = document.createElement('div'); p.className = 'panel'; p.id = 'p' + i; p.hidden = i !== sel;
+    const body = document.createElement('div'); body.className = 'pbody';
+    const left = document.createElement('div');
+    if (s.note) { const n = document.createElement('p'); n.className = 'note'; n.textContent = s.note; left.append(n); }
+    if (s.html) {
+      const a = document.createElement('button'); a.type = 'button'; a.className = 'btn primary'; a.textContent = 'Open this one';
+      a.addEventListener('click', () => openViewer(s.title, s.html)); left.append(a);
+    } else if (url) {
+      const a = document.createElement('button'); a.type = 'button'; a.className = 'btn primary'; a.textContent = 'Open this one';
+      a.addEventListener('click', () => openViewer(s.title, '', url)); left.append(a);
+    } else {
+      const t = document.createElement('span'); t.className = 'pitnote'; t.textContent = 'still in the pit, nothing added yet'; left.append(t);
+    }
+    body.append(left);
+    if (s.img) {
+      const f = document.createElement('figure'); f.className = 'cam';
+      const im = document.createElement('img'); im.src = s.img; im.alt = '';
+      f.append(im); body.append(f);
+    }
+    p.append(body);
+
+    if (EDIT) {
+      const tools = document.createElement('div'); tools.className = 'tools';
+      const mk = (label, fn, cls, dis) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm ' + (cls || '');
+        b.textContent = label; b.disabled = !!dis; b.addEventListener('click', fn); return b;
+      };
+      tools.append(
+        mk('Edit', () => openDialog(i)),
+        mk('Move up', () => move(i, -1), '', i === 0),
+        mk('Move down', () => move(i, 1), '', i === sites.length - 1),
+        mk('Delete', () => del(i), 'danger')
+      );
+      p.append(tools);
+    }
+    return p;
+  }
+
+  function renderRows(){
+    rows.textContent = '';
+    const n = sites.length;
+    if (!n) {
+      const li = document.createElement('li'); const p = document.createElement('p'); p.className = 'empty';
+      p.textContent = EDIT ? 'nothing here yet, add the first one above.' : 'the first one is on its way.';
+      li.append(p); rows.append(li); return;
+    }
+    sites.forEach((s, i) => {
+      const open = i === sel;
+      const li = document.createElement('li');
+      li.className = 'row' + (open ? ' open' : '');
+      li.style.setProperty('--d', (i * 70) + 'ms');
+
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'rowbtn';
+      b.setAttribute('aria-expanded', open); b.setAttribute('aria-controls', 'p' + i);
+      b.style.setProperty('--tc', tyre(i, n));
+
+      const pos = document.createElement('span'); pos.className = 'pos'; pos.textContent = i + 1;
+      const ty = document.createElement('span'); ty.className = 'tyre'; ty.setAttribute('aria-hidden', 'true');
+      const mid = document.createElement('span');
+      const nm = document.createElement('span'); nm.className = 'name'; nm.textContent = s.title || 'Untitled';
+      mid.append(nm);
+      const chips = document.createElement('span'); chips.className = 'chips';
+      if (i === 0) { const c = document.createElement('span'); c.className = 'chip purple'; c.textContent = 'latest'; chips.append(c); }
+      if (!siteHas(s)) { const c = document.createElement('span'); c.className = 'chip yellow'; c.textContent = 'in the pit'; chips.append(c); }
+      else if (EDIT && s.html) { const c = document.createElement('span'); c.className = 'chip'; c.textContent = 'code added'; chips.append(c); }
+      if (chips.childNodes.length) mid.append(chips);
+      const tm = document.createElement('span'); tm.className = 'time'; tm.textContent = s.date || '--';
+      b.append(pos, ty, mid, tm);
+
+      b.addEventListener('click', () => toggle(i, true));
+      b.addEventListener('keydown', e => {
+        const btns = [...rows.querySelectorAll('.rowbtn')], k = btns.indexOf(b);
+        let t = -1;
+        if (e.key === 'ArrowDown') t = Math.min(btns.length - 1, k + 1);
+        else if (e.key === 'ArrowUp') t = Math.max(0, k - 1);
+        else if (e.key === 'Home') t = 0;
+        else if (e.key === 'End') t = btns.length - 1;
+        if (t >= 0) { e.preventDefault(); btns[t].focus(); }
+      });
+
+      li.append(b, buildPanel(s, i));
+      rows.append(li);
+    });
+  }
+
+  function render(){
+    renderRows(); renderTrack(); updateHud();
+    const n = sites.length;
+    $('count').textContent = (n === 0 ? 'no websites yet' : n + (n === 1 ? ' website' : ' websites')) + ', and counting.';
+    if (EDIT) renderDesk();
+  }
+
+  function toggle(i, focusRow){
+    stopAuto();
+    if (sel === i) { sel = -1; }
+    else { sel = i; at = i; driveTo(i); }
+    renderRows(); renderTrack(); updateHud();
+    if (focusRow) { const b = rows.children[i] && rows.children[i].querySelector('.rowbtn'); if (b) b.focus({ preventScroll: true }); }
+  }
+
+  /* --------------------------- run the lap --------------------------- */
+  let auto = null;
+  function stopAuto(){ if (auto) { clearInterval(auto); auto = null; } $('run').textContent = 'Run the lap'; }
+  function setSel(i){
+    sel = i; at = i; driveTo(i); renderRows(); renderTrack(); updateHud();
+    const li = rows.children[i]; if (li) li.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+  }
+  $('run').addEventListener('click', () => {
+    if (auto) { stopAuto(); return; }
+    if (!sites.length) return;
+    let i = 0;
+    jumpTo(0); setSel(0);
+    $('run').textContent = 'Pause';
+    auto = setInterval(() => {
+      i++;
+      if (i >= sites.length) { stopAuto(); toast('Chequered flag.'); return; }
+      setSel(i);
+    }, 2800);
+  });
+
+  /* ---------------------------- start lights ---------------------------- */
+  const cols = [...document.querySelectorAll('#gantry .col')];
+  let seqTimers = [], seqRunning = false;
+  function clearSeq(){ seqTimers.forEach(clearTimeout); seqTimers = []; }
+  function lightsOut(){
+    clearSeq(); seqRunning = false;
+    cols.forEach(c => c.classList.remove('on'));
+    tower.classList.add('go');
+    seqTimers.push(setTimeout(() => tower.classList.remove('armed', 'go'), 800 + sites.length * 70));
+  }
+  function startSeq(){
+    clearSeq(); cols.forEach(c => c.classList.remove('on'));
+    if (reduce) { tower.classList.remove('armed', 'go'); return; }
+    seqRunning = true;
+    tower.classList.add('armed'); tower.classList.remove('go');
+    cols.forEach((c, k) => seqTimers.push(setTimeout(() => c.classList.add('on'), 450 * (k + 1))));
+    seqTimers.push(setTimeout(lightsOut, 450 * 5 + 700 + Math.random() * 900));
+  }
+  $('gantry').addEventListener('click', () => { if (seqRunning) lightsOut(); else startSeq(); });
+
+  /* ------------------------------ real F1 data ------------------------------ */
+  // A saved copy, used instantly and whenever the live feed can't be reached.
+  // Rows are [driver, team, points, wins], [team, points, wins], [driver, team, time or gap, points].
+  const F1_SNAPSHOT = {
+    season: '2026', round: 16, savedAt: '10 Oct 2026',
+    drivers: [
+      ['Antonelli','Mercedes',320,8], ['Russell','Mercedes',236,3], ['Hamilton','Ferrari',214,1],
+      ['Leclerc','Ferrari',191,1], ['Norris','McLaren',188,2], ['Verstappen','Red Bull',188,1],
+      ['Piastri','McLaren',128,0], ['Hadjar','Red Bull',96,0], ['Lawson','RB / Red Bull',65,0],
+      ['Gasly','Alpine',41,0], ['Lindblad','RB',38,0], ['Colapinto','Alpine',27,0],
+      ['Bearman','Haas',20,0], ['Bortoleto','Audi',10,0], ['Hülkenberg','Audi',7,0],
+      ['Ocon','Haas',7,0], ['Alonso','Aston Martin',7,0], ['Sainz','Williams',7,0],
+      ['Albon','Williams',5,0], ['Tsunoda','RB',1,0], ['Stroll','Aston Martin',0,0],
+      ['Bottas','Cadillac',0,0], ['Pérez','Cadillac',0,0]
+    ],
+    teams: [
+      ['Mercedes',556,11], ['Ferrari',405,2], ['McLaren',316,2], ['Red Bull',298,1],
+      ['RB',90,0], ['Alpine',68,0], ['Haas',27,0], ['Audi',17,0], ['Williams',12,0],
+      ['Aston Martin',7,0], ['Cadillac',0,0]
+    ],
+    last: {
+      name: 'Bahrain Grand Prix in Malaysia', circuit: 'Sepang International Circuit', place: 'Kuala Lumpur, Malaysia', date: '2026-10-04',
+      results: [
+        ['Verstappen','Red Bull','1:47:14.808',25], ['Antonelli','Mercedes','+2.307',18], ['Hamilton','Ferrari','+4.919',15],
+        ['Leclerc','Ferrari','+7.258',12], ['Hadjar','Red Bull','+8.571',10], ['Piastri','McLaren','+9.454',8],
+        ['Lawson','RB','+12.753',6], ['Alonso','Aston Martin','+13.372',4], ['Norris','McLaren','+13.993',2],
+        ['Lindblad','RB','+15.928',1]
+      ]
+    },
+    next: { name: 'Singapore Grand Prix', circuit: 'Marina Bay Street Circuit', place: 'Marina Bay, Singapore', date: '2026-10-11', time: '12:00:00Z' }
+  };
+
+  // Every call to the API goes through one polite queue (about 4 requests a second at most),
+  // and past-season data is cached in the browser so repeat visits barely touch the API.
+  const JOLPI = 'https://api.jolpi.ca/ergast/f1/';
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  let jq = Promise.resolve();
+  function jolpi(path){
+    const run = async () => {
+      for (let k = 0; k < 2; k++) {
+        const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 9000);
+        try {
+          const r = await fetch(JOLPI + path, { signal: ctl.signal });
+          if (r.status === 429 && k === 0) { await sleep(1500); continue; }
+          if (!r.ok) throw new Error('http ' + r.status);
+          return await r.json();
+        } finally { clearTimeout(t); }
+      }
+      throw new Error('rate limited');
+    };
+    const p = jq.then(run);
+    jq = p.then(() => sleep(260), () => sleep(260));
+    return p;
+  }
+  function cget(key, ttl){
+    try { const c = JSON.parse(localStorage.getItem(key) || 'null'); if (c && (ttl == null || Date.now() - c.t < ttl)) return c.d; } catch (e) {}
+    return null;
+  }
+  function cset(key, d){ try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), d })); } catch (e) {} }
+
+  const F1 = { data: JSON.parse(JSON.stringify(F1_SNAPSHOT)), live: false, loading: true, tab: 'drivers', all: false };
+
+  const teamName = n => (n || '').replace(/ F1 Team$/, '');
+  function normDrivers(j){
+    const l = j.MRData.StandingsTable.StandingsLists[0];
+    return { season: l.season, round: +l.round, rows: l.DriverStandings.map(d => {
+      const teams = [...new Set((d.Constructors || []).map(c => teamName(c.name)))].join(' / ');   // drivers who switched teams show both
+      return [d.Driver.familyName, teams, +d.points, +d.wins, d.Driver.driverId, d.Driver.givenName + ' ' + d.Driver.familyName];
+    }) };
+  }
+  function normTeams(j){
+    return j.MRData.StandingsTable.StandingsLists[0].ConstructorStandings.map(c => [teamName(c.Constructor.name), +c.points, +c.wins]);
+  }
+  function normRace(r){
+    return {
+      name: r.raceName, circuit: r.Circuit.circuitName,
+      place: r.Circuit.Location.locality + ', ' + r.Circuit.Location.country,
+      date: r.date, time: r.time || '',
+      results: (r.Results || []).slice(0, 10).map(x => [x.Driver.familyName, teamName(x.Constructor.name), x.Time ? x.Time.time : x.status, +x.points])
+    };
+  }
+  const getJSON = path => jolpi('current/' + path);
+  async function loadF1(){
+    const CK = 'maica-f1-cache-v2';
+    try {
+      const c = JSON.parse(sessionStorage.getItem(CK) || 'null');
+      if (c && Date.now() - c.t < 30 * 60 * 1000) { F1.data = c.d; F1.live = true; F1.loading = false; renderF1(); startCmp(); return; }
+    } catch (e) {}
+    const d = JSON.parse(JSON.stringify(F1_SNAPSHOT));
+    let ok = 0;
+    const attempt = async fn => { try { await fn(); ok++; } catch (e) {} };
+    await attempt(async () => { const n = normDrivers(await getJSON('driverStandings.json')); d.drivers = n.rows; d.round = n.round; d.season = n.season; });
+    await attempt(async () => { d.teams = normTeams(await getJSON('constructorStandings.json')); });
+    await attempt(async () => { const r = (await getJSON('last/results.json')).MRData.RaceTable.Races[0]; if (r) d.last = normRace(r); });
+    await attempt(async () => { const r = (await getJSON('next.json')).MRData.RaceTable.Races[0]; d.next = r ? normRace(r) : null; });
+    F1.data = d; F1.live = ok > 0; F1.loading = false;
+    if (ok === 4) { try { sessionStorage.setItem(CK, JSON.stringify({ t: Date.now(), d })); } catch (e) {} }
+    renderF1(); startCmp();
+  }
+
+  function f1Item(pos, name, sub, val, pct){
+    const li = document.createElement('li'); li.className = 'item';
+    const p = document.createElement('span'); p.className = 'p'; p.textContent = pos;
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = name;
+    if (sub) { const s = document.createElement('small'); s.textContent = sub; n.append(s); }
+    const v = document.createElement('span'); v.className = 'v'; v.textContent = val;
+    li.append(p, n, v);
+    if (pct != null) {
+      const b = document.createElement('i'); b.className = 'bar'; b.setAttribute('aria-hidden', 'true');
+      b.style.setProperty('--w', Math.max(0, Math.min(100, pct * 100)) + '%'); li.append(b);
+    }
+    return li;
+  }
+  function raceWhen(date, time){
+    if (!date) return '';
+    if (time) {
+      const dt = new Date(date + 'T' + time);
+      if (!isNaN(dt)) return dt.toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+    }
+    return new Date(date + 'T00:00:00Z').toLocaleDateString(undefined, { day: 'numeric', month: 'short', timeZone: 'UTC' });
+  }
+  function renderNext(){
+    const el = $('next'), nx = F1.data.next;
+    el.textContent = '';
+    if (!nx) { el.hidden = true; return; }
+    let rel = '';
+    if (nx.time) {
+      const ms = new Date(nx.date + 'T' + nx.time) - Date.now();
+      if (!isNaN(ms)) {
+        if (ms > 36e5 * 48) rel = ' (in ' + Math.round(ms / 864e5) + ' days)';
+        else if (ms > 36e5) rel = ' (in ' + Math.round(ms / 36e5) + ' hours)';
+        else if (ms > 0) rel = ' (very soon)';
+      }
+    }
+    const s = document.createElement('span'); s.textContent = nx.name;
+    el.append('Next up: ', s, ', ' + nx.place + ', ' + raceWhen(nx.date, nx.time) + rel);
+    el.hidden = false;
+  }
+  function renderF1(){
+    const d = F1.data, body = $('f1body'), more = $('f1more');
+    document.querySelectorAll('#f1tabs .tab').forEach(b => b.setAttribute('aria-pressed', b.dataset.tab === F1.tab ? 'true' : 'false'));
+
+    const meta = $('f1meta'); meta.textContent = '';
+    if (F1.loading) meta.textContent = 'updating…';
+    else {
+      const dot = document.createElement('span'); dot.className = 'dot' + (F1.live ? '' : ' off');
+      meta.append(dot, F1.live ? 'after round ' + d.round : 'after round ' + d.round + ', offline copy from ' + d.savedAt);
+    }
+    renderNext();
+
+    body.textContent = ''; more.hidden = true;
+    if (F1.tab === 'race') {
+      const r = d.last;
+      const h = document.createElement('p'); h.className = 'racehead';
+      h.textContent = r.name + ', ' + r.circuit + ', ' + r.place + ', ' + raceWhen(r.date, '');
+      const ul = document.createElement('ol'); ul.className = 'list';
+      r.results.forEach((x, i) => ul.append(f1Item(i + 1, x[0], x[1] + ', ' + x[3] + ' pts', x[2], null)));
+      body.append(h, ul);
+    } else if (F1.tab === 'teams') {
+      const top = d.teams[0] ? d.teams[0][1] || 1 : 1;
+      const ul = document.createElement('ol'); ul.className = 'list';
+      d.teams.forEach((x, i) => ul.append(f1Item(i + 1, x[0], '', x[1], x[1] / top)));
+      body.append(ul);
+    } else {
+      const top = d.drivers[0] ? d.drivers[0][2] || 1 : 1;
+      const list = F1.all ? d.drivers : d.drivers.slice(0, 10);
+      const ul = document.createElement('ol'); ul.className = 'list';
+      list.forEach((x, i) => ul.append(f1Item(i + 1, x[0], x[1], x[2], x[2] / top)));
+      body.append(ul);
+      if (d.drivers.length > 10) { more.hidden = false; more.textContent = F1.all ? 'Show top 10' : 'Show all ' + d.drivers.length; }
+    }
+  }
+  $('f1tabs').addEventListener('click', e => {
+    const b = e.target.closest('.tab'); if (!b) return;
+    F1.tab = b.dataset.tab; renderF1();
+  });
+  $('f1more').addEventListener('click', () => { F1.all = !F1.all; renderF1(); });
+
+  /* ------------------------------ compare drivers ------------------------------ */
+  const CMP = { a: null, b: null, metric: 'points', range: '5', data: null, list: null, byName: null, started: false };
+  const DAY = 864e5, HOURS6 = 6 * 36e5;
+  let cmpRun = 0;
+
+  async function loadSeason(y){
+    const cur = +F1.data.season, k = 'maica-f1-s' + y;
+    const hit = cget(k, y < cur ? null : HOURS6); if (hit) return hit;
+    const j = await jolpi(y + '/driverStandings.json?limit=100');
+    const l = j.MRData.StandingsTable.StandingsLists[0], m = {};
+    (l ? l.DriverStandings : []).forEach(s => { m[s.Driver.driverId] = [+s.position, +s.points, +s.wins]; });
+    const out = { m }; cset(k, out); return out;
+  }
+  async function loadDriver(id){
+    const k = 'maica-f1-d-' + id, hit = cget(k, HOURS6); if (hit) return hit;
+    const seasons = (await jolpi('drivers/' + id + '/seasons.json?limit=100')).MRData.SeasonTable.Seasons.map(s => +s.season);
+    let polesTotal = 0, off = 0;
+    for (;;) {
+      const j = await jolpi('drivers/' + id + '/qualifying/1.json?limit=100&offset=' + off);
+      polesTotal = +j.MRData.total; off += 100;
+      if (off >= polesTotal || !j.MRData.RaceTable.Races.length) break;
+    }
+    const tot = async p => +(await jolpi('drivers/' + id + '/results/' + p + '.json?limit=1')).MRData.total;
+    const w = await tot(1), s2 = await tot(2), s3 = await tot(3);
+    const out = { seasons, polesTotal, wins: w, podiums: w + s2 + s3 };
+    cset(k, out); return out;
+  }
+  async function loadDriverList(){
+    if (CMP.list) return CMP.list;
+    let list = cget('maica-f1-list', 7 * DAY);
+    if (!list) {
+      list = []; let off = 0, total = 1;
+      while (off < total) {
+        const j = await jolpi('drivers.json?limit=100&offset=' + off);
+        total = +j.MRData.total;
+        j.MRData.DriverTable.Drivers.forEach(d => list.push([d.driverId, d.givenName + ' ' + d.familyName]));
+        off += 100;
+      }
+      cset('maica-f1-list', list);
+    }
+    CMP.list = list; CMP.byName = new Map();
+    const dl = $('drvlist'); dl.textContent = '';
+    list.forEach(([id, name]) => {
+      const key = name.toLowerCase();
+      if (!CMP.byName.has(key)) CMP.byName.set(key, { id, name });
+      const o = document.createElement('option'); o.value = name; dl.append(o);
+    });
+    return list;
+  }
+
+  function cmpNote(msg){ const n = $('cmpNote'); n.textContent = msg || ''; n.hidden = !msg; }
+  function syncCmpTabs(){
+    document.querySelectorAll('#cmpMetric .tab').forEach(b => b.setAttribute('aria-pressed', b.dataset.metric === CMP.metric ? 'true' : 'false'));
+    document.querySelectorAll('#cmpRange .tab').forEach(b => b.setAttribute('aria-pressed', b.dataset.range === CMP.range ? 'true' : 'false'));
+  }
+  function nameToDriver(name){
+    const q = (name || '').trim().toLowerCase(); if (!q) return null;
+    for (const r of F1.data.drivers) if (r[4] && (r[5] || '').toLowerCase() === q) return { id: r[4], name: r[5] };
+    return CMP.byName && CMP.byName.has(q) ? CMP.byName.get(q) : null;
+  }
+  function startCmp(){
+    if (CMP.started) return;
+    const rows = F1.data.drivers;
+    if (!F1.live || !rows[1] || !rows[0][4]) {
+      $('cmpBody').textContent = '';
+      cmpNote('The comparison needs the live data feed, which could not be reached just now. Try reloading in a moment.');
+      return;
+    }
+    CMP.started = true;
+    CMP.a = { id: rows[0][4], name: rows[0][5] }; CMP.b = { id: rows[1][4], name: rows[1][5] };
+    $('cmpA').value = CMP.a.name; $('cmpB').value = CMP.b.name;
+    refreshCmp();
+  }
+
+  function windowYears(da, db){
+    const cur = +F1.data.season, from = CMP.range === 'all' ? 0 : cur - (+CMP.range) + 1;
+    return [...new Set([...da.seasons, ...db.seasons])].filter(y => y >= from && y <= cur).sort((x, y) => x - y);
+  }
+  async function refreshCmp(){
+    const run = ++cmpRun, body = $('cmpBody');
+    if (!CMP.a || !CMP.b) return;
+    if (CMP.a.id === CMP.b.id) { cmpNote('Pick two different drivers to compare.'); return; }
+    cmpNote('');
+    body.textContent = ''; $('cmpmeta').textContent = 'loading…';
+    const p = document.createElement('p'); p.className = 'cmp-note'; p.textContent = 'Loading seasons, this takes a few seconds the first time.'; body.append(p);
+    try {
+      const da = await loadDriver(CMP.a.id); if (run !== cmpRun) return;
+      const db = await loadDriver(CMP.b.id); if (run !== cmpRun) return;
+      const years = windowYears(da, db), sm = {};
+      for (const y of years) { sm[y] = await loadSeason(y); if (run !== cmpRun) return; }
+      CMP.data = { da, db, years, sm };
+      renderCmp();
+      loadDriverList().catch(() => {});      // warm up the name suggestions in the background
+    } catch (e) {
+      if (run !== cmpRun) return;
+      body.textContent = ''; $('cmpmeta').textContent = '';
+      cmpNote("Couldn't load that comparison right now. Try again in a moment.");
+    }
+  }
+
+  const stdev = a => { const m = a.reduce((s, v) => s + v, 0) / a.length; return Math.sqrt(a.reduce((s, v) => s + (v - m) * (v - m), 0) / a.length); };
+  const niceStep = x => { if (x <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(x))), f = x / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; };
+  const svgEl = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.append(e); return e; };
+
+  function renderCmp(){
+    const D = CMP.data; if (!D) return;
+    const { da, db, years, sm } = D, cur = +F1.data.season, body = $('cmpBody');
+    const rowsFor = id => years.map(y => { const r = sm[y] && sm[y].m[id]; return r ? { y, pos: r[0], pts: r[1], wins: r[2] } : null; });
+    const ra = rowsFor(CMP.a.id), rb = rowsFor(CMP.b.id);
+    const keep = years.map((y, i) => i).filter(i => ra[i] || rb[i]);
+    body.textContent = ''; cmpNote('');
+    if (!keep.length) { $('cmpmeta').textContent = ''; cmpNote('No season results for these two drivers in this window. Try a longer range.'); return; }
+
+    const yy = keep.map(i => years[i]), A = keep.map(i => ra[i]), B = keep.map(i => rb[i]);
+    const m = CMP.metric, val = r => !r ? null : m === 'points' ? r.pts : m === 'wins' ? r.wins : r.pos;
+    const unit = m === 'points' ? 'pts' : m === 'wins' ? 'wins' : '';
+    const fmt = v => v == null ? 'no season' : m === 'pos' ? 'P' + v : (Number.isInteger(v) ? v : v.toFixed(1)) + ' ' + unit;
+    const first = CMP.a.name.split(' ').slice(-1)[0], second = CMP.b.name.split(' ').slice(-1)[0];
+    $('cmpmeta').textContent = yy[0] === yy[yy.length - 1] ? String(yy[0]) : yy[0] + '–' + yy[yy.length - 1];
+
+    const cap = document.createElement('p'); cap.className = 'racehead';
+    cap.textContent = m === 'points' ? 'Championship points per season' : m === 'wins' ? 'Race wins per season' : 'Final championship position per season (P1 at the top)';
+    body.append(cap);
+
+    /* ---- chart ---- */
+    const W = 640, H = 250, l = 44, r = 16, t = 14, bt = 30, n = yy.length;
+    const av = A.map(val), bv = B.map(val), all = [...av, ...bv].filter(v => v != null);
+    let top, ticks = [];
+    if (m === 'pos') { top = Math.max(5, Math.ceil(Math.max(...all) / 5) * 5); ticks = [1]; for (let v = 5; v <= top; v += 5) ticks.push(v); }
+    else { const mx = Math.max(...all, 1), st = niceStep(mx / 4); top = Math.ceil(mx / st) * st; for (let v = 0; v <= top + 1e-9; v += st) ticks.push(v); }
+    const X = i => n === 1 ? (l + W - r) / 2 : l + i * (W - l - r) / (n - 1);
+    const Y = v => m === 'pos' ? t + (v - 1) / (top - 1) * (H - t - bt) : t + (1 - v / top) * (H - t - bt);
+    const host = document.createElement('div'); host.className = 'chart';
+    const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': `${CMP.a.name} and ${CMP.b.name}: ${cap.textContent}, ${yy[0]} to ${yy[n - 1]}.` }, host);
+    ticks.forEach(v => {
+      svgEl('line', { class: 'gl', x1: l, x2: W - r, y1: Y(v), y2: Y(v) }, svg);
+      const tx = svgEl('text', { class: 'tx', x: l - 8, y: Y(v) + 4, 'text-anchor': 'end' }, svg); tx.textContent = m === 'pos' ? 'P' + v : v;
+    });
+    const stepX = Math.ceil(n / 9);
+    yy.forEach((y, i) => { if (i % stepX === 0 || i === n - 1) { const tx = svgEl('text', { class: 'tx', x: X(i), y: H - 8, 'text-anchor': 'middle' }, svg); tx.textContent = y; } });
+    const path = vs => { let s = '', pen = false; vs.forEach((v, i) => { if (v == null) { pen = false; return; } s += (pen ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1) + ' '; pen = true; }); return s; };
+    svgEl('path', { class: 'la', d: path(av) }, svg); svgEl('path', { class: 'lb', d: path(bv) }, svg);
+    av.forEach((v, i) => { if (v != null) svgEl('circle', { class: 'da', cx: X(i), cy: Y(v), r: 3.8 }, svg); });
+    bv.forEach((v, i) => { if (v != null) svgEl('rect', { class: 'db', x: X(i) - 3.5, y: Y(v) - 3.5, width: 7, height: 7 }, svg); });
+    const guide = svgEl('line', { class: 'guide', y1: t, y2: H - bt, x1: X(n - 1), x2: X(n - 1) }, svg);
+    const read = document.createElement('p'); read.className = 'readout'; read.setAttribute('aria-live', 'off');
+    const setActive = i => { guide.setAttribute('x1', X(i)); guide.setAttribute('x2', X(i)); read.textContent = `${yy[i]}: ${first} ${fmt(av[i])}, ${second} ${fmt(bv[i])}`; };
+    const hw = (W - l - r) / (2 * Math.max(n - 1, 1));
+    yy.forEach((y, i) => {
+      const hit = svgEl('rect', { x: X(i) - hw, y: t, width: 2 * hw, height: H - t - bt, fill: 'transparent' }, svg);
+      hit.addEventListener('pointermove', () => setActive(i)); hit.addEventListener('pointerdown', () => setActive(i));
+    });
+    svg.addEventListener('pointerleave', () => setActive(n - 1));
+    setActive(n - 1);
+    body.append(host, read);
+
+    const srt = document.createElement('table'); srt.className = 'sr';
+    const cp = document.createElement('caption'); cp.textContent = cap.textContent; srt.append(cp);
+    const hr = srt.insertRow(); ['Season', CMP.a.name, CMP.b.name].forEach(h => { const c = document.createElement('th'); c.textContent = h; hr.append(c); });
+    yy.forEach((y, i) => { const tr = srt.insertRow(); [y, fmt(av[i]), fmt(bv[i])].forEach(v => tr.insertCell().textContent = v); });
+    body.append(srt);
+
+    /* ---- stats ---- */
+    const stat = rs => {
+      rs = rs.filter(Boolean);
+      return {
+        avgPts: rs.length ? rs.reduce((s, x) => s + x.pts, 0) / rs.length : null,
+        best: rs.length ? Math.min(...rs.map(x => x.pos)) : null,
+        titles: rs.filter(x => x.pos === 1 && x.y < cur).length,
+        spread: rs.length > 1 ? stdev(rs.map(x => x.pos)) : null
+      };
+    };
+    const sa = stat(ra), sb = stat(rb);
+    const one = v => v == null ? '–' : v.toFixed(1);
+    const table = [
+      ['Seasons in F1', da.seasons.length, db.seasons.length, null],
+      ['Wins, career', da.wins, db.wins, 'high'],
+      ['Poles, career', da.polesTotal, db.polesTotal, 'high'],
+      ['Podiums, career', da.podiums, db.podiums, 'high'],
+      ['Titles in this window', sa.titles, sb.titles, 'high'],
+      ['Points per season, average', sa.avgPts, sb.avgPts, 'high', one],
+      ['Best finish in this window', sa.best, sb.best, 'low', v => v == null ? '–' : 'P' + v],
+      ['Position spread (lower is steadier)', sa.spread, sb.spread, 'low', one]
+    ];
+    const tb = document.createElement('table'); tb.className = 'cmpt';
+    const hrow = tb.insertRow();
+    const th0 = document.createElement('th'); hrow.append(th0);
+    [[CMP.a.name, ''], [CMP.b.name, 'b']].forEach(([nm, cls]) => {
+      const th = document.createElement('th'); const sw = document.createElement('i'); sw.className = 'sw ' + cls; th.append(sw, nm); hrow.append(th);
+    });
+    table.forEach(([label, x, y, better, f]) => {
+      const tr = tb.insertRow(); tr.insertCell().textContent = label;
+      const fm = f || (v => v == null ? '–' : String(v));
+      const c1 = tr.insertCell(), c2 = tr.insertCell(); c1.textContent = fm(x); c2.textContent = fm(y);
+      if (better && x != null && y != null && x !== y) {
+        const aWins = better === 'high' ? x > y : x < y;
+        (aWins ? c1 : c2).classList.add('lead');
+      }
+    });
+    body.append(tb);
+  }
+
+  $('cmpMetric').addEventListener('click', e => {
+    const b = e.target.closest('.tab'); if (!b) return;
+    CMP.metric = b.dataset.metric; syncCmpTabs(); renderCmp();
+  });
+  $('cmpRange').addEventListener('click', e => {
+    const b = e.target.closest('.tab'); if (!b) return;
+    CMP.range = b.dataset.range; syncCmpTabs(); if (CMP.a && CMP.b) refreshCmp();
+  });
+  async function pickDriver(which){
+    const inp = $(which === 'a' ? 'cmpA' : 'cmpB');
+    let d = nameToDriver(inp.value);
+    if (!d && inp.value.trim()) { try { await loadDriverList(); } catch (e) {} d = nameToDriver(inp.value); }
+    if (!d) { cmpNote(inp.value.trim() ? 'No driver found with that name. Pick one from the suggestions.' : ''); return; }
+    inp.value = d.name; CMP[which] = d; refreshCmp();
+  }
+  $('cmpA').addEventListener('change', () => pickDriver('a'));
+  $('cmpB').addEventListener('change', () => pickDriver('b'));
+  ['cmpA', 'cmpB'].forEach(id => $(id).addEventListener('focus', () => { loadDriverList().catch(() => {}); }, { once: true }));
+
+  /* ------------------------- tyre & pit strategy (OpenF1) ------------------------- */
+  const OF = 'https://api.openf1.org/v1/';
+  const TYRE = { SOFT:['#E4262B','S','soft'], MEDIUM:['#E8C84A','M','medium'], HARD:['#F3F3F1','H','hard'], INTERMEDIATE:['#2FE38C','I','intermediate'], WET:['#4AA8FF','W','wet'] };
+  const cmpCol = c => (TYRE[c] || ['#8C929C'])[0];
+  const cmpLetter = c => (TYRE[c] || [0, '?'])[1];
+  const cmpName = c => (TYRE[c] || [0, 0, (c || 'unknown').toLowerCase()])[2];
+  const ASSUMED_WEAR = { SOFT:0.09, MEDIUM:0.06, HARD:0.04, INTERMEDIATE:0.07, WET:0.05 };  // s lost per lap of tyre age, only used when no stint has been measured
+  const FUEL_GAIN = 0.035;                                                                    // assumed s gained per lap as the car gets lighter
+
+  const median = a => { if (!a.length) return NaN; const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+  const fmtLap = s => { const m = Math.floor(s / 60); return m + ':' + (s - m * 60).toFixed(1).padStart(4, '0'); };
+  const sgn = v => (v >= 0 ? '+' : '') + v.toFixed(3);
+
+  function el(ns, tag, a, kids){
+    const e = ns ? document.createElementNS(NS, tag) : document.createElement(tag);
+    for (const k in (a || {})) {
+      const v = a[k]; if (v == null) continue;
+      if (k === 'text') e.textContent = v;
+      else if (k.slice(0, 2) === 'on') e.addEventListener(k.slice(2), v);
+      else e.setAttribute(k === 'cls' ? 'class' : k, v);
+    }
+    (kids || []).forEach(c => { if (c != null) e.append(c); });
+    return e;
+  }
+  const H = (tag, a, ...k) => el(false, tag, a, k.flat());
+  const S = (tag, a, ...k) => el(true, tag, a, k.flat());
+
+  const ofCache = new Map(); let ofLast = 0;
+  async function ofGet(path){
+    if (ofCache.has(path)) return ofCache.get(path);
+    const wait = Math.max(0, ofLast + 350 - Date.now());     // the API is rate limited, so space requests out
+    ofLast = Date.now() + wait;
+    if (wait) await new Promise(r => setTimeout(r, wait));
+    for (let attempt = 0; ; attempt++) {
+      const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 20000);
+      try {
+        const r = await fetch(OF + path, { signal: ctl.signal });
+        if (r.status === 429 && attempt < 3) { await new Promise(z => setTimeout(z, 1500 * (attempt + 1))); continue; }   // too many requests: wait and retry
+        if (!r.ok) throw new Error('http ' + r.status);
+        const j = await r.json();
+        if (!Array.isArray(j)) throw new Error('unexpected reply');
+        ofCache.set(path, j); return j;
+      } finally { clearTimeout(t); }
+    }
+  }
+
+  const ST = { meetings:[], sessions:[], sk:null, stints:[], pits:[], drivers:{}, pick:null, laps:{}, wear:new Map(), tok:0 };
+  const stBody = $('stBody'), stMeeting = $('stMeeting'), stSession = $('stSession');
+
+  function stMsg(text, retry){
+    stBody.textContent = '';
+    const p = H('p', { cls:'stmsg', text });
+    if (retry) p.append(' ', H('button', { type:'button', cls:'btn sm', onclick:retry, text:'Try again' }));
+    stBody.append(p);
+  }
+  function fillSelect(sel, items, val, label){
+    sel.textContent = '';
+    items.forEach(x => sel.append(H('option', { value:x[val], text:label(x) })));
+  }
+
+  async function stInit(){
+    stMsg('loading race weekends…');
+    try {
+      const m = await ofGet('meetings?year=' + new Date().getFullYear());
+      ST.meetings = m.filter(x => !x.is_cancelled && /grand prix/i.test(x.meeting_name || '') && new Date(x.date_start) <= Date.now())
+                     .sort((a, b) => new Date(b.date_start) - new Date(a.date_start));
+      if (!ST.meetings.length) { stMsg('no race weekends have run yet this season.'); return; }
+      fillSelect(stMeeting, ST.meetings, 'meeting_key', x => x.meeting_name + (x.circuit_short_name ? ', ' + x.circuit_short_name : ''));
+      let pick = ST.meetings[0].meeting_key;                    // prefer the latest weekend that has had a race
+      for (const m of ST.meetings.slice(0, 3)) {
+        const ss = await ofGet('sessions?meeting_key=' + m.meeting_key);
+        if (ss.some(x => x.session_name === 'Race' && new Date(x.date_start) <= Date.now())) { pick = m.meeting_key; break; }
+      }
+      await stPickMeeting(pick);
+    } catch (e) { stMsg("couldn't reach the timing data right now.", stInit); }
+  }
+
+  async function stPickMeeting(key){
+    const tok = ++ST.tok; stMeeting.value = key;
+    stMsg('loading sessions…');
+    try {
+      const s = await ofGet('sessions?meeting_key=' + key);
+      if (tok !== ST.tok) return;
+      ST.sessions = s.filter(x => new Date(x.date_start) <= Date.now()).sort((a, b) => new Date(a.date_start) - new Date(b.date_start));
+      if (!ST.sessions.length) { stSession.textContent = ''; stMsg('no sessions have run for this weekend yet.'); return; }
+      fillSelect(stSession, ST.sessions, 'session_key', x => x.session_name);
+      const race = ST.sessions.find(x => x.session_name === 'Race');
+      await stPickSession((race || ST.sessions[ST.sessions.length - 1]).session_key);
+    } catch (e) { if (tok === ST.tok) stMsg("couldn't load that weekend.", () => stPickMeeting(key)); }
+  }
+
+  async function stPickSession(sk){
+    const tok = ++ST.tok; ST.sk = sk; stSession.value = sk; ST.pick = null; ST.laps = {}; ST.wear = new Map();
+    stMsg('loading tyre data…');
+    try {
+      const stints = await ofGet('stints?session_key=' + sk);
+      const pits = await ofGet('pit?session_key=' + sk);
+      let drivers = []; try { drivers = await ofGet('drivers?session_key=' + sk); } catch (e) {}
+      if (tok !== ST.tok) return;
+      ST.stints = stints; ST.pits = pits; ST.drivers = {};
+      drivers.forEach(d => { ST.drivers[d.driver_number] = {
+        code: d.name_acronym || ('#' + d.driver_number), name: d.full_name || '', team: d.team_name || '',
+        col: d.team_colour ? '#' + String(d.team_colour).replace('#', '') : '#8C929C' }; });
+      lcSession();
+      renderStrat();
+    } catch (e) { if (tok === ST.tok) stMsg("couldn't load the tyre data for that session.", () => stPickSession(sk)); }
+  }
+  stMeeting.addEventListener('change', () => stPickMeeting(+stMeeting.value));
+  stSession.addEventListener('change', () => stPickSession(+stSession.value));
+
+  const stByDriver = () => {
+    const m = {};
+    ST.stints.forEach(s => (m[s.driver_number] = m[s.driver_number] || []).push(s));
+    Object.values(m).forEach(a => a.sort((x, y) => x.stint_number - y.stint_number));
+    return m;
+  };
+  const stTotal = () => ST.stints.reduce((n, s) => Math.max(n, s.lap_end || s.lap_start || 0), 0);
+  const infoOf = num => ST.drivers[num] || { code:'#' + num, name:'', team:'', col:'#8C929C' };
+
+  function renderStrat(){
+    const ses = ST.sessions.find(x => x.session_key == ST.sk);
+    $('stMeta').textContent = ses ? ses.session_name.toLowerCase() + (ses.date_start ? ', ' + new Date(ses.date_start).toLocaleDateString(undefined, { day:'numeric', month:'short' }) : '') : '';
+    const by = stByDriver(), N = stTotal();
+    const nums = Object.keys(by);
+    if (!nums.length || !N) { stMsg('no tyre data for this session.'); return; }
+    nums.sort((a, b) => Math.max(...by[b].map(s => s.lap_end || 0)) - Math.max(...by[a].map(s => s.lap_end || 0)) || a - b);
+
+    stBody.textContent = '';
+    const used = [...new Set(ST.stints.map(s => s.compound))];
+    stBody.append(H('div', { cls:'legend' }, used.map(c => H('span', {}, H('i', { style:'background:' + cmpCol(c) }), cmpName(c) + ' (' + cmpLetter(c) + ')'))));
+
+    const step = N > 40 ? 10 : 5;
+    const axis = H('div', { cls:'axis', 'aria-hidden':'true' });
+    for (let t = step; t <= N; t += step) axis.append(H('span', { style:'left:' + (t / N * 100) + '%', text:t }));
+    stBody.append(axis);
+
+    nums.forEach(num => {
+      stBody.append(H('button', {
+        type:'button', cls:'srow', 'data-n':num, 'aria-pressed':'false',
+        'aria-label':infoOf(num).code + ', ' + by[num].length + (by[num].length === 1 ? ' stint' : ' stints'),
+        onclick:() => stSelect(num)
+      },
+        H('span', { cls:'who', style:'--tc:' + infoOf(num).col }, H('i'), infoOf(num).code),
+        H('span', { cls:'strack' }, by[num].map(s => {
+          const a = s.lap_start || 1, b = s.lap_end || N;
+          return H('span', { cls:'seg', title:'stint ' + s.stint_number + ', ' + cmpName(s.compound) + ', laps ' + a + ' to ' + b,
+            style:'left:' + ((a - 1) / N * 100) + '%;width:' + ((b - a + 1) / N * 100) + '%;background:' + cmpCol(s.compound),
+            text:(b - a + 1) >= 3 ? cmpLetter(s.compound) : '' });
+        }))
+      ));
+    });
+    stBody.append(H('div', { cls:'sdetail', id:'stDetail', 'aria-live':'polite' }));
+    stSelect(nums[0]);
+  }
+
+  async function stSelect(num){
+    ST.pick = num;
+    stBody.querySelectorAll('.srow').forEach(r => r.setAttribute('aria-pressed', String(r.dataset.n == num)));
+    const box = $('stDetail'); if (!box) return;
+    box.textContent = ''; box.append(H('p', { cls:'stmsg', text:'loading laps…' }));
+    const key = ST.sk + ':' + num;
+    try { if (!ST.laps[key]) ST.laps[key] = await ofGet('laps?session_key=' + ST.sk + '&driver_number=' + num); }
+    catch (e) {
+      if (ST.pick == num) { box.textContent = ''; box.append(H('p', { cls:'stmsg' }, "couldn't load this driver's laps. ", H('button', { type:'button', cls:'btn sm', onclick:() => stSelect(num), text:'Try again' }))); }
+      return;
+    }
+    if (ST.pick == num) renderDetail(num);
+  }
+
+  function regress(pts){          // least squares: lap time against lap number
+    const n = pts.length, mx = pts.reduce((a, p) => a + p.lap_number, 0) / n, my = pts.reduce((a, p) => a + p.lap_duration, 0) / n;
+    let sxx = 0, sxy = 0; pts.forEach(p => { sxx += (p.lap_number - mx) ** 2; sxy += (p.lap_number - mx) * (p.lap_duration - my); });
+    const m = sxx ? sxy / sxx : 0; return { m, c:my - m * mx };
+  }
+
+  function renderDetail(num){
+    const box = $('stDetail'); box.textContent = '';
+    const info = infoOf(num), N = stTotal();
+    const stints = stByDriver()[num] || [];
+    const laps = ST.laps[ST.sk + ':' + num] || [];
+    const myPits = ST.pits.filter(p => p.driver_number == num);
+    const skip = new Set(myPits.map(p => p.lap_number));
+    stints.forEach((s, i) => { if (i < stints.length - 1 && s.lap_end) skip.add(s.lap_end); });   // in-laps
+
+    let clean = laps.filter(l => l.lap_duration > 0 && l.lap_number > 1 && !l.is_pit_out_lap && !skip.has(l.lap_number));
+    const med = median(clean.map(l => l.lap_duration));
+    clean = clean.filter(l => l.lap_duration <= med * 1.07);    // drops safety car and traffic laps
+
+    box.append(H('h3', { text:info.name || info.code }), H('p', { cls:'sub2', text:[info.team, stints.length + (stints.length === 1 ? ' stint' : ' stints')].filter(Boolean).join(', ') }));
+
+    const trend = new Map();
+    stints.forEach(s => {
+      const a = s.lap_start || 1, b = s.lap_end || N;
+      const pts = clean.filter(l => l.lap_number >= a && l.lap_number <= b);
+      if (pts.length >= 5) {
+        const r = regress(pts); trend.set(s.stint_number, { ...r, a, b, n:pts.length });
+        ST.wear.set(ST.sk + ':' + num + ':' + s.stint_number, { c:s.compound, w:r.m + FUEL_GAIN });
+      }
+    });
+
+    if (clean.length < 3) box.append(H('p', { cls:'stmsg', text:'not enough clean laps recorded for this driver to draw a chart.' }));
+    else box.append(lapChart(clean, stints, N, trend));
+
+    const ul = H('ul', { cls:'sttable' });
+    stints.forEach(s => {
+      const a = s.lap_start || 1, b = s.lap_end || N, t = trend.get(s.stint_number);
+      ul.append(H('li', {},
+        H('span', { cls:'tyc' }, H('i', { style:'background:' + cmpCol(s.compound) }), 'stint ' + s.stint_number + ', ' + cmpName(s.compound)),
+        H('span', { cls:'dim', text:'laps ' + a + ' to ' + b + ' (' + (b - a + 1) + ')' + (s.tyre_age_at_start ? ', started ' + s.tyre_age_at_start + ' laps old' : '') }),
+        H('span', { cls:'dim', text: t ? 'trend ' + sgn(t.m) + ' s/lap raw, ' + sgn(t.m + FUEL_GAIN) + ' after fuel correction' : 'too few clean laps for a trend' })
+      ));
+      const p = myPits.find(x => x.lap_number === b);
+      if (p && s !== stints[stints.length - 1]) {
+        const d = p.pit_duration != null ? p.pit_duration : p.lane_duration;
+        ul.append(H('li', { cls:'pit' }, 'pit stop, lap ' + b + ', ' + (d == null ? 'time not recorded' : d > 60 ? 'long stop (likely a red flag)' : d.toFixed(1) + ' s')));
+      }
+    });
+    box.append(ul);
+
+    const ses = ST.sessions.find(x => x.session_key == ST.sk);
+    if (ses && (ses.session_name === 'Race' || ses.session_name === 'Sprint')) box.append(estimator(stints, N));
+  }
+
+  const chartW = () => { const b = $('stDetail'); return Math.max(300, Math.min(900, (b ? b.clientWidth - 36 : 0) || 640)); };   // draw at real size so text stays readable on phones
+  function lapChart(clean, stints, N, trend){
+    const W = chartW(), Ht = W < 480 ? 200 : 230, ml = 48, mr = 12, mt = 12, mb = 26;
+    const xs = lap => ml + (N > 1 ? (lap - 1) / (N - 1) : 0) * (W - ml - mr);
+    const vals = clean.map(l => l.lap_duration);
+    let lo = Math.min(...vals), hi = Math.max(...vals); const pad = Math.max(0.3, (hi - lo) * 0.08); lo -= pad; hi += pad;
+    const ys = v => mt + (hi - v) / (hi - lo) * (Ht - mt - mb);
+    const svg = S('svg', { cls:'lapchart', viewBox:'0 0 ' + W + ' ' + Ht, role:'img', 'aria-label':'Lap times through the session, one dot per lap, with a dashed trend line for each tyre stint.' });
+    for (let i = 0; i <= 3; i++) {
+      const v = lo + (hi - lo) * i / 3;
+      svg.append(S('line', { x1:ml, x2:W - mr, y1:ys(v), y2:ys(v), stroke:'rgba(255,255,255,.07)' }), S('text', { x:ml - 6, y:ys(v) + 3, 'text-anchor':'end', text:fmtLap(v) }));
+    }
+    const step = N > 40 ? 10 : 5;
+    for (let t = step; t <= N; t += step) svg.append(S('text', { x:xs(t), y:Ht - 8, 'text-anchor':'middle', text:t }));
+    svg.append(S('text', { x:W - mr, y:Ht - 8, 'text-anchor':'end', text:'lap' }));
+    clean.forEach(l => {
+      const s = stints.find(x => l.lap_number >= (x.lap_start || 1) && l.lap_number <= (x.lap_end || N));
+      svg.append(S('circle', { cx:xs(l.lap_number), cy:ys(l.lap_duration), r:2.6, fill:cmpCol(s && s.compound), opacity:.9 }));
+    });
+    stints.forEach(s => {
+      const t = trend.get(s.stint_number); if (!t) return;
+      svg.append(S('line', { x1:xs(t.a), x2:xs(t.b), y1:ys(t.c + t.m * t.a), y2:ys(t.c + t.m * t.b), stroke:cmpCol(s.compound), 'stroke-width':1.5, 'stroke-dasharray':'5 4' }));
+    });
+    return svg;
+  }
+
+  /* pit window: a deliberately simple model. Each lap on a tyre costs a fixed amount more than the lap before. */
+  function wearFor(c){
+    const v = []; ST.wear.forEach(x => { if (x.c === c) v.push(x.w); });
+    return v.length ? { w:Math.max(0.01, median(v)), src:'measured' } : { w:ASSUMED_WEAR[c] || 0.06, src:'assumed' };
+  }
+  function estimator(stints, N){
+    const wrap = H('div', { cls:'est' });
+    const dry = ['SOFT', 'MEDIUM', 'HARD'], present = [...new Set(ST.stints.map(s => s.compound))].filter(Boolean);
+    const comps = [...new Set([...dry, ...present])];
+    const goodPits = ST.pits.map(p => p.pit_duration != null ? p.pit_duration : p.lane_duration).filter(d => d >= 12 && d <= 45);
+    const loss0 = goodPits.length ? median(goodPits) : 22;
+    const sel = (id, def) => H('select', { id }, comps.map(c => H('option', { value:c, text:cmpName(c), selected:c === def ? '' : null })));
+    const selA = sel('esA', (stints[0] && stints[0].compound) || 'MEDIUM'), selB = sel('esB', (stints[1] && stints[1].compound) || 'HARD');
+    const inN = H('input', { id:'esN', type:'number', min:10, max:120, value:N }), inL = H('input', { id:'esL', type:'number', min:5, max:60, step:0.5, value:loss0.toFixed(1) });
+    const out = H('div', { cls:'estout' }), chart = H('div');
+    wrap.append(H('h4', { text:'Where should the stop go?' }),
+      H('p', { cls:'sub2', text:'Try a one-stop race and see how much a small shift in the stop lap costs.' }),
+      H('div', { cls:'ctrls' },
+        H('label', {}, 'START ON', selA), H('label', {}, 'THEN FIT', selB),
+        H('label', {}, 'RACE LAPS', inN), H('label', {}, 'PIT LOSS (S)', inL)),
+      out, chart,
+      H('p', { cls:'fine', text:'Simple model: each lap on a tyre is slower than the last by a fixed amount, and pace is otherwise equal. It ignores traffic, safety cars and tyre rules. Wear comes from stints measured in this session (fuel-corrected) once you have opened drivers, otherwise from assumed typical values.' }));
+
+    function run(){
+      const n = Math.max(10, Math.min(120, Math.round(+inN.value) || N));
+      const loss = Math.max(5, Math.min(60, +inL.value || 22));
+      const A = wearFor(selA.value), B = wearFor(selB.value);
+      const g = (w, k) => w * k * (k + 1) / 2;
+      const cost = [];
+      for (let p = 2; p <= n - 2; p++) cost.push([p, g(A.w, p) + g(B.w, n - p) + loss]);
+      const min = Math.min(...cost.map(c => c[1])), best = cost.find(c => c[1] === min)[0];
+      const win = cost.filter(c => c[1] - min <= 0.5).map(c => c[0]);
+      let two = Infinity, tp1 = 0, tp2 = 0;
+      for (let p1 = 2; p1 < n - 3; p1++) for (let p2 = p1 + 2; p2 <= n - 2; p2++) {
+        const t = g(A.w, p1) + g(B.w, p2 - p1) + g(B.w, n - p2) + 2 * loss;
+        if (t < two) { two = t; tp1 = p1; tp2 = p2; }
+      }
+      out.textContent = '';
+      out.append(
+        H('p', {}, 'Best single stop: lap ', H('em', { text:best }), '. Anywhere from lap ' + win[0] + ' to ' + win[win.length - 1] + ' costs under half a second extra.'),
+        H('p', {}, 'Best two-stop version: laps ' + tp1 + ' and ' + tp2 + ', which comes out ', H('em', { text: Math.abs(two - min).toFixed(1) + ' s ' + (two < min ? 'faster' : 'slower') }), ' than one stop.'),
+        H('p', { cls:'dim', text:cmpName(selA.value) + ' wears ' + A.w.toFixed(3) + ' s/lap (' + A.src + '), ' + cmpName(selB.value) + ' ' + B.w.toFixed(3) + ' s/lap (' + B.src + ').' })
+      );
+      chart.textContent = '';
+      chart.append(estChart(cost, min, win, stints.length > 1 ? stints[0].lap_end : null));
+    }
+    [selA, selB, inN, inL].forEach(x => x.addEventListener('input', run));
+    run();
+    return wrap;
+  }
+  function estChart(cost, min, win, actual){
+    const W = chartW(), Ht = 186, ml = 48, mr = 12, mt = 10, mb = 38, cap = 8;
+    const p0 = cost[0][0], p1 = cost[cost.length - 1][0];
+    const xs = p => ml + (p - p0) / (p1 - p0) * (W - ml - mr);
+    const ys = d => (Ht - mb) - Math.min(d, cap) / cap * (Ht - mt - mb);
+    const svg = S('svg', { cls:'lapchart', viewBox:'0 0 ' + W + ' ' + Ht, role:'img', 'aria-label':'Extra time against the lap the stop is made on. The low point is the best stop lap.' });
+    svg.append(S('rect', { x:xs(win[0]), y:mt, width:Math.max(2, xs(win[win.length - 1]) - xs(win[0])), height:Ht - mt - mb, fill:'rgba(47,227,140,.12)' }));
+    [0, 4, 8].forEach(v => svg.append(S('line', { x1:ml, x2:W - mr, y1:ys(v), y2:ys(v), stroke:'rgba(255,255,255,.07)' }), S('text', { x:ml - 6, y:ys(v) + 3, 'text-anchor':'end', text:'+' + v + 's' })));
+    const step = (p1 - p0) > 40 ? 10 : 5;
+    for (let t = Math.ceil(p0 / step) * step; t <= p1; t += step) svg.append(S('text', { x:xs(t), y:Ht - 22, 'text-anchor':'middle', text:t }));
+    svg.append(S('text', { x:W - mr, y:Ht - 6, 'text-anchor':'end', text:'lap the stop is made on' }));
+    svg.append(S('polyline', { points:cost.map(c => xs(c[0]).toFixed(1) + ',' + ys(c[1] - min).toFixed(1)).join(' '), fill:'none', stroke:'#E4262B', 'stroke-width':2 }));
+    if (actual && actual >= p0 && actual <= p1) svg.append(
+      S('line', { x1:xs(actual), x2:xs(actual), y1:mt, y2:Ht - mb, stroke:'#E8C84A', 'stroke-dasharray':'4 4' }),
+      S('text', { x:xs(actual) + 4, y:mt + 9, text:'actual stop, lap ' + actual }));
+    return svg;
+  }
+
+  /* ------------------------- lap comparison (OpenF1 telemetry) ------------------------- */
+  const LC = { a:null, b:null, laps:{ a:[], b:[] }, tok:0, model:null, k:null };
+  const LC_COL = { a:'#E4262B', b:'#4AA8FF' }, LC_M = 401, LC_SECT = 25;
+  const lcSel = { da:$('lcDA'), db:$('lcDB'), la:$('lcLA'), lb:$('lcLB') }, lcBody = $('lcBody');
+  const lcW = () => Math.max(300, Math.min(900, (lcBody.clientWidth - 36) || 640));
+  const lcCode = num => infoOf(num).code;
+
+  function lcMsg(text, retry){
+    lcBody.textContent = '';
+    const p = H('p', { cls:'stmsg', text });
+    if (retry) p.append(' ', H('button', { type:'button', cls:'btn sm', onclick:retry, text:'Try again' }));
+    lcBody.append(p);
+  }
+  function lcDisable(on){ Object.values(lcSel).forEach(x => { x.disabled = on; }); }
+
+  const lcBin = (xs, x) => { let lo = 0, hi = xs.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (xs[m] <= x) lo = m; else hi = m; } return lo; };
+  function lcInterp(xs, ys, x){
+    const n = xs.length; if (x <= xs[0]) return ys[0]; if (x >= xs[n - 1]) return ys[n - 1];
+    const i = lcBin(xs, x), dx = xs[i + 1] - xs[i];
+    return dx > 0 ? ys[i] + (ys[i + 1] - ys[i]) * (x - xs[i]) / dx : ys[i];
+  }
+  function lcNear(xs, ys, x){
+    const n = xs.length; if (x <= xs[0]) return ys[0]; if (x >= xs[n - 1]) return ys[n - 1];
+    const i = lcBin(xs, x); return (x - xs[i] <= xs[i + 1] - x) ? ys[i] : ys[i + 1];
+  }
+
+  function lcOrder(){
+    const by = stByDriver(), nums = Object.keys(by);
+    nums.sort((a, b) => Math.max(...by[b].map(s => s.lap_end || 0)) - Math.max(...by[a].map(s => s.lap_end || 0)) || a - b);
+    return nums;
+  }
+  async function lcLaps(num){
+    const k = ST.sk + ':' + num;
+    if (!ST.laps[k]) ST.laps[k] = await ofGet('laps?session_key=' + ST.sk + '&driver_number=' + num);
+    return ST.laps[k];
+  }
+  function lcFillLaps(w, laps){
+    const ok = laps.filter(l => l.lap_duration > 0 && l.date_start).sort((a, b) => a.lap_number - b.lap_number);
+    LC.laps[w] = ok;
+    const real = ok.filter(l => l.lap_number > 1 && !l.is_pit_out_lap);
+    const best = (real.length ? real : ok).reduce((m, l) => (!m || l.lap_duration < m.lap_duration ? l : m), null);
+    const sel = lcSel['l' + w]; sel.textContent = '';
+    ok.forEach(l => sel.append(H('option', { value:l.lap_number, text:'lap ' + l.lap_number + ', ' + fmtLap(l.lap_duration) + (best && l === best ? ' (fastest)' : '') })));
+    if (best) sel.value = best.lap_number;
+    return !!best;
+  }
+
+  async function lcSession(){
+    const tok = ++LC.tok;
+    const ses = ST.sessions.find(x => x.session_key == ST.sk);
+    $('lcMeta').textContent = ses ? ses.session_name.toLowerCase() : '';
+    LC.model = null;
+    const nums = lcOrder();
+    if (nums.length < 2) { lcDisable(true); lcMsg('this session needs at least two drivers with data to compare.'); return; }
+    ['da', 'db'].forEach(k => { lcSel[k].textContent = ''; nums.forEach(n => lcSel[k].append(H('option', { value:n, text:lcCode(n) + (infoOf(n).name ? ', ' + infoOf(n).name : '') }))); });
+    lcSel.da.value = nums[0]; lcSel.db.value = nums[1];
+    lcDisable(true); lcMsg('loading laps…');
+    try {
+      const la = await lcLaps(nums[0]), lb = await lcLaps(nums[1]);
+      if (tok !== LC.tok) return;
+      const okA = lcFillLaps('a', la), okB = lcFillLaps('b', lb);
+      lcDisable(false);
+      if (!okA || !okB) { lcMsg('no timed laps for one of these drivers yet.'); return; }
+      lcCompare();
+    } catch (e) { if (tok === LC.tok) { lcDisable(false); lcMsg("couldn't load the laps for this session.", lcSession); } }
+  }
+  async function lcDriverChanged(w){
+    const num = lcSel['d' + w].value, tok = ++LC.tok;
+    lcMsg('loading laps…');
+    try {
+      const laps = await lcLaps(num);
+      if (tok !== LC.tok) return;
+      if (!lcFillLaps(w, laps)) { lcMsg('no timed laps for ' + lcCode(num) + ' in this session.'); return; }
+      lcCompare();
+    } catch (e) { if (tok === LC.tok) lcMsg("couldn't load that driver's laps.", () => lcDriverChanged(w)); }
+  }
+  lcSel.da.addEventListener('change', () => lcDriverChanged('a'));
+  lcSel.db.addEventListener('change', () => lcDriverChanged('b'));
+  lcSel.la.addEventListener('change', () => lcCompare());
+  lcSel.lb.addEventListener('change', () => lcCompare());
+
+  const lcIso = ms => new Date(ms).toISOString().slice(0, -1);   // the API wants a time with no zone suffix
+  const lcRec = w => { const n = +lcSel['l' + w].value; return LC.laps[w].find(l => l.lap_number === n) || null; };
+  function lcUrl(kind, num, rec){
+    const t0 = Date.parse(rec.date_start), t1 = t0 + rec.lap_duration * 1000;
+    return kind + '?session_key=' + ST.sk + '&driver_number=' + num + '&date>=' + lcIso(t0 - 300) + '&date<' + lcIso(t1 + 300);
+  }
+
+  /* turn one lap of raw samples into time and distance */
+  function lcPrep(rows, rec){
+    const start = Date.parse(rec.date_start), dur = rec.lap_duration;
+    const pts = rows.map(r => ({ ms:Date.parse(r.date), v:+r.speed, th:Math.max(0, Math.min(100, +r.throttle || 0)), br:+r.brake > 0 ? 1 : 0, g:+r.n_gear || 0 }))
+      .filter(p => isFinite(p.ms) && isFinite(p.v) && p.ms >= start - 300 && p.ms <= start + dur * 1000 + 300)
+      .sort((a, b) => a.ms - b.ms);
+    if (pts.length < 20) return null;
+    const t0 = pts[0].ms, span = (pts[pts.length - 1].ms - t0) / 1000;
+    if (span < dur * 0.8) return null;                       // the lap isn't fully covered by the data
+    const sc = dur / span;
+    pts.forEach(p => { p.t = (p.ms - t0) / 1000 * sc; });
+    let d = 0; pts[0].d = 0;
+    for (let i = 1; i < pts.length; i++) { d += (pts[i].v + pts[i - 1].v) / 7.2 * (pts[i].t - pts[i - 1].t); pts[i].d = d; }
+    pts.forEach(p => { p.f = d ? p.d / d : 0; });
+    return { pts, t0, sc, ts:pts.map(p => p.t), fs:pts.map(p => p.f), dur };
+  }
+  function lcGrid(P){
+    const col = k => P.pts.map(p => p[k]), v = col('v'), th = col('th'), br = col('br'), ge = col('g'), tt = col('t'), g = { sp:[], th:[], br:[], ge:[], t:[] };
+    for (let k = 0; k < LC_M; k++) {
+      const f = k / (LC_M - 1);
+      g.sp.push(lcInterp(P.fs, v, f)); g.th.push(lcInterp(P.fs, th, f)); g.br.push(lcNear(P.fs, br, f)); g.ge.push(lcNear(P.fs, ge, f)); g.t.push(lcInterp(P.fs, tt, f));
+    }
+    return g;
+  }
+
+  async function lcCompare(){
+    const tok = ++LC.tok;
+    const na = lcSel.da.value, nb = lcSel.db.value, ra = lcRec('a'), rb = lcRec('b');
+    if (!ra || !rb) { lcMsg('pick a lap for each driver.'); return; }
+    lcMsg('loading telemetry…');
+    try {
+      const carA = await ofGet(lcUrl('car_data', na, ra)), carB = await ofGet(lcUrl('car_data', nb, rb));
+      let loc = null; try { loc = await ofGet(lcUrl('location', na, ra)); } catch (e) {}
+      if (tok !== LC.tok) return;
+      const PA = lcPrep(carA, ra), PB = lcPrep(carB, rb);
+      if (!PA || !PB) { lcMsg('telemetry for ' + (!PA ? lcCode(na) + ' lap ' + ra.lap_number : lcCode(nb) + ' lap ' + rb.lap_number) + ' is incomplete, so it can\'t be compared. Try another lap.'); return; }
+      const GA = lcGrid(PA), GB = lcGrid(PB);
+      const gap = GB.t.map((t, k) => t - GA.t[k]);                      // above zero: driver one is ahead
+      const sect = [];
+      for (let s = 0; s < LC_SECT; s++) {
+        const i1 = Math.round(s * (LC_M - 1) / LC_SECT), i2 = Math.round((s + 1) * (LC_M - 1) / LC_SECT);
+        sect.push({ i1, i2, swing:(GB.t[i2] - GB.t[i1]) - (GA.t[i2] - GA.t[i1]) });   // positive: driver one gained
+      }
+      let mapPts = null;
+      if (loc) {
+        mapPts = loc.map(r => ({ ms:Date.parse(r.date), x:+r.x, y:-(+r.y) }))
+          .filter(p => isFinite(p.ms) && isFinite(p.x) && isFinite(p.y))
+          .sort((a, b) => a.ms - b.ms)
+          .map(p => ({ x:p.x, y:p.y, f:lcInterp(PA.ts, PA.fs, (p.ms - PA.t0) / 1000 * PA.sc) }))
+          .filter(p => p.f >= 0 && p.f <= 1);
+        if (mapPts.length < 30) mapPts = null;
+      }
+      LC.model = { na, nb, ra, rb, PA, PB, GA, GB, gap, sect, mapPts, W:lcW() };
+      lcRender(LC.model);
+    } catch (e) { if (tok === LC.tok) lcMsg("couldn't load telemetry for those laps. It may not be available for this session.", lcCompare); }
+  }
+
+  function lcRender(m){
+    lcBody.textContent = '';
+    const A = lcCode(m.na), B = lcCode(m.nb), W = m.W;
+    const same = m.na === m.nb && m.ra.lap_number === m.rb.lap_number;
+    const stat = G => ({ top:Math.max(...G.sp), full:G.th.filter(v => v >= 98).length / LC_M * 100, brake:G.br.filter(v => v).length / LC_M * 100 });
+    const sa = stat(m.GA), sb = stat(m.GB), diff = m.rb.lap_duration - m.ra.lap_duration;
+
+    /* map */
+    const map = H('div', { cls:'lc-map' });
+    if (m.mapPts) {
+      const MW = 420, MH = 300, pad = 16, xs = m.mapPts.map(p => p.x), ys = m.mapPts.map(p => p.y);
+      const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+      const sc = Math.min((MW - 2 * pad) / ((x1 - x0) || 1), (MH - 2 * pad) / ((y1 - y0) || 1));
+      const ox = (MW - (x1 - x0) * sc) / 2, oy = (MH - (y1 - y0) * sc) / 2;
+      const px = p => ((p.x - x0) * sc + ox).toFixed(1) + ',' + ((p.y - y0) * sc + oy).toFixed(1);
+      const svg = S('svg', { viewBox:'0 0 ' + MW + ' ' + MH, role:'img', 'aria-label':'Track map. Each stretch of the lap is coloured by which driver was quicker through it.' });
+      svg.append(S('polyline', { points:m.mapPts.map(px).join(' '), fill:'none', stroke:'#2B2F37', 'stroke-width':10, 'stroke-linejoin':'round', 'stroke-linecap':'round' }));
+      const groups = Array.from({ length:LC_SECT }, () => []);
+      m.mapPts.forEach((p, i) => {
+        const s = Math.min(LC_SECT - 1, Math.floor(p.f * LC_SECT)); groups[s].push(p);
+        const nx = m.mapPts[i + 1]; if (nx && Math.min(LC_SECT - 1, Math.floor(nx.f * LC_SECT)) !== s) groups[s].push(nx);
+      });
+      groups.forEach((g, s) => { if (g.length > 1) svg.append(S('polyline', { points:g.map(px).join(' '), fill:'none', stroke:same ? '#8C929C' : (m.sect[s].swing >= 0 ? LC_COL.a : LC_COL.b), 'stroke-width':4.5, 'stroke-linejoin':'round', 'stroke-linecap':'round' })); });
+      svg.append(S('circle', { cx:px(m.mapPts[0]).split(',')[0], cy:px(m.mapPts[0]).split(',')[1], r:4, fill:'#fff' }));
+      const dot = S('circle', { id:'lcDot', r:6, fill:'#fff', stroke:'#0B0C0E', 'stroke-width':2, visibility:'hidden' }); svg.append(dot);
+      m.dotAt = f => { const k = lcNear(m.mapPts.map(p => p.f), m.mapPts.map((p, i) => i), f), p = m.mapPts[k], c = px(p).split(','); dot.setAttribute('cx', c[0]); dot.setAttribute('cy', c[1]); dot.setAttribute('visibility', 'visible'); };
+      m.dotOff = () => dot.setAttribute('visibility', 'hidden');
+      map.append(svg, H('p', { cls:'lc-cap' }, same ? 'Same lap picked twice.' : [H('i', { cls:'lc-sw', style:'background:' + LC_COL.a }), A + ' quicker here  ', H('i', { cls:'lc-sw', style:'background:' + LC_COL.b }), B + ' quicker here']));
+    } else map.append(H('p', { cls:'lc-cap', text:'track map unavailable for this lap.' }));
+
+    /* summary */
+    const sw = c => H('i', { cls:'lc-sw', style:'background:' + c });
+    const row = (lbl, a, b, lead) => H('tr', {}, H('td', { text:lbl }), H('td', { cls:lead === 'a' ? 'lead' : '', text:a }), H('td', { cls:lead === 'b' ? 'lead' : '', text:b }));
+    const tbl = H('table', { cls:'lc-t' },
+      H('thead', {}, H('tr', {}, H('th', {}), H('th', {}, sw(LC_COL.a), A + ' ' + m.ra.lap_number), H('th', {}, sw(LC_COL.b), B + ' ' + m.rb.lap_number))),
+      H('tbody', {},
+        row('lap time', fmtLap(m.ra.lap_duration), fmtLap(m.rb.lap_duration), diff > 0 ? 'a' : diff < 0 ? 'b' : ''),
+        row('top speed', Math.round(sa.top) + ' km/h', Math.round(sb.top) + ' km/h', sa.top > sb.top ? 'a' : sb.top > sa.top ? 'b' : ''),
+        row('full throttle', Math.round(sa.full) + '%', Math.round(sb.full) + '%', ''),
+        row('braking', Math.round(sa.brake) + '%', Math.round(sb.brake) + '%', '')));
+    let best = m.sect[0], worst = m.sect[0];
+    m.sect.forEach(s => { if (s.swing > best.swing) best = s; if (s.swing < worst.swing) worst = s; });
+    const pct = i => Math.round(i / (LC_M - 1) * 100);
+    const lead = diff > 0 ? A : B, trail = diff > 0 ? B : A, big = diff > 0 ? best : worst;
+    const sum = H('p', { cls:'lc-sum', text: same ? 'Pick two different laps to see where time is won and lost.'
+      : Math.abs(diff) < 0.0005 ? 'The two laps are level.'
+      : lead + ' is ' + Math.abs(diff).toFixed(3) + ' s quicker than ' + trail + '. The biggest single swing is between ' + pct(big.i1) + '% and ' + pct(big.i2) + '% of the lap, where ' + lead + ' gains ' + Math.abs(big.swing).toFixed(3) + ' s.' });
+    lcBody.append(H('div', { cls:'lc-top' }, map, H('div', {}, tbl, sum)));
+
+    /* readout + stacked charts */
+    const read = H('div', { cls:'lc-read', id:'lcRead', text:'move across the charts, or use the arrow keys, to compare the two laps at any point.' });
+    lcBody.append(read);
+    const ml = 56, mr = 10, panels = [
+      { k:'sp', h:130, lbl:'speed, km/h' }, { k:'gap', h:72, lbl:'gap, s (above 0: ' + A + ' ahead)' },
+      { k:'th', h:56, lbl:'throttle, %' }, { k:'br', h:30, lbl:'brake' }, { k:'ge', h:54, lbl:'gear' } ];
+    let y = 4; panels.forEach(p => { p.y = y + 15; y = p.y + p.h + 8; });
+    const Ht = y + 22, X = f => ml + f * (W - ml - mr);
+    const svg = S('svg', { viewBox:'0 0 ' + W + ' ' + Ht, role:'img', tabindex:0, 'aria-label':'Telemetry for both laps against distance round the lap: speed, time gap, throttle, brake and gear.' });
+    const spMax = Math.max(100, Math.ceil(Math.max(...m.GA.sp, ...m.GB.sp) / 50) * 50);
+    const gMax = Math.max(0.3, Math.ceil(Math.max(...m.gap.map(Math.abs)) * 10) / 10);
+    const Y = { sp:v => panels[0].y + panels[0].h * (1 - v / spMax), gap:v => panels[1].y + panels[1].h * (0.5 - v / (2 * gMax)), th:v => panels[2].y + panels[2].h * (1 - v / 100), ge:v => panels[4].y + panels[4].h * (1 - v / 8) };
+    const line = (arr, fn, c) => S('polyline', { points:arr.map((v, k) => X(k / (LC_M - 1)).toFixed(1) + ',' + fn(v).toFixed(1)).join(' '), fill:'none', stroke:c, 'stroke-width':1.6, 'stroke-linejoin':'round' });
+    panels.forEach(p => svg.append(S('text', { x:ml, y:p.y - 5, text:p.lbl }), S('rect', { x:ml, y:p.y, width:W - ml - mr, height:p.h, fill:'none', stroke:'rgba(255,255,255,.08)' })));
+    const tick = (fn, v, lbl) => svg.append(S('line', { x1:ml, x2:W - mr, y1:fn(v), y2:fn(v), stroke:'rgba(255,255,255,.06)' }), S('text', { x:ml - 6, y:fn(v) + 4, 'text-anchor':'end', text:lbl }));
+    for (let v = 0; v <= spMax; v += spMax > 300 ? 100 : 50) tick(Y.sp, v, v);
+    tick(Y.gap, gMax, '+' + gMax.toFixed(1)); tick(Y.gap, 0, '0'); tick(Y.gap, -gMax, '-' + gMax.toFixed(1));
+    tick(Y.th, 100, 100); tick(Y.th, 0, 0);
+    [2, 4, 6, 8].forEach(v => tick(Y.ge, v, v));
+    svg.append(line(m.GA.sp, Y.sp, LC_COL.a), line(m.GB.sp, Y.sp, LC_COL.b));
+    svg.append(S('line', { x1:ml, x2:W - mr, y1:Y.gap(0), y2:Y.gap(0), stroke:'rgba(255,255,255,.3)' }), line(m.gap, Y.gap, '#E8C84A'));
+    svg.append(line(m.GA.th, Y.th, LC_COL.a), line(m.GB.th, Y.th, LC_COL.b));
+    [['a', m.GA, 0], ['b', m.GB, 1]].forEach(([w, G, r]) => {          // brake as bars: one thin row per driver
+      let on = -1;
+      for (let k = 0; k <= LC_M; k++) {
+        const b = k < LC_M && G.br[k];
+        if (b && on < 0) on = k;
+        if (!b && on >= 0) { svg.append(S('rect', { x:X(on / (LC_M - 1)), y:panels[3].y + 3 + r * 13, width:Math.max(1.5, X((k - 1) / (LC_M - 1)) - X(on / (LC_M - 1))), height:10, fill:LC_COL[w] })); on = -1; }
+      }
+    });
+    svg.append(line(m.GA.ge, Y.ge, LC_COL.a), line(m.GB.ge, Y.ge, LC_COL.b));
+    [0, 25, 50, 75, 100].forEach(t => svg.append(S('text', { x:X(t / 100), y:Ht - 6, 'text-anchor':t === 0 ? 'start' : t === 100 ? 'end' : 'middle', text:t + '%' })));
+    svg.append(S('text', { x:W - mr, y:Ht - 20, 'text-anchor':'end', text:'distance round the lap' }));
+    const cur = S('line', { y1:panels[0].y, y2:panels[4].y + panels[4].h, stroke:'#fff', 'stroke-opacity':.7, 'stroke-dasharray':'3 3', visibility:'hidden' }); svg.append(cur);
+
+    const show = k => {
+      k = Math.max(0, Math.min(LC_M - 1, k)); LC.k = k;
+      const f = k / (LC_M - 1), x = X(f);
+      cur.setAttribute('x1', x); cur.setAttribute('x2', x); cur.setAttribute('visibility', 'visible');
+      const one = (G, c) => c + ' ' + Math.round(G.sp[k]) + ' km/h, ' + (G.br[k] ? 'braking' : Math.round(G.th[k]) + '% throttle') + ', gear ' + G.ge[k];
+      const g = m.gap[k];
+      read.textContent = Math.round(f * 100) + '% of the lap.  ' + one(m.GA, A) + '.  ' + one(m.GB, B) + '.  ' + (Math.abs(g) < 0.0005 ? 'level' : 'gap ' + Math.abs(g).toFixed(3) + ' s, ' + (g > 0 ? A : B) + ' ahead') + '.';
+      if (m.dotAt) m.dotAt(f);
+    };
+    const at = e => { const r = svg.getBoundingClientRect(); const f = ((e.clientX - r.left) / r.width * W - ml) / (W - ml - mr); show(Math.round(f * (LC_M - 1))); };
+    svg.addEventListener('pointermove', at); svg.addEventListener('pointerdown', at);
+    svg.addEventListener('pointerleave', () => { cur.setAttribute('visibility', 'hidden'); if (m.dotOff) m.dotOff(); });
+    svg.addEventListener('keydown', e => {
+      const step = e.shiftKey ? 20 : 4; let k = LC.k == null ? 0 : LC.k;
+      if (e.key === 'ArrowRight') k += step; else if (e.key === 'ArrowLeft') k -= step; else if (e.key === 'Home') k = 0; else if (e.key === 'End') k = LC_M - 1; else return;
+      e.preventDefault(); show(k);
+    });
+    lcBody.append(H('div', { cls:'lc-charts' }, svg));
+  }
+
+  /* ------------------------------ stat search ------------------------------ */
+  const SQ = { ready:null, circuits:[], teams:[], cache:new Map(), tok:0, p:null };
+  const sqIn = $('sqIn'), sqOut = $('sqOut'), sqChipsEl = $('sqChips');
+  const sqNorm = t => (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const KIND = { wins:['win', 'wins'], poles:['pole position', 'pole positions'], fastest:['fastest lap', 'fastest laps'], podiums:['podium', 'podiums'], starts:['race start', 'race starts'], titles:['world title', 'world titles'], points:['point', 'points'] };
+  const kindN = (n, k) => n + ' ' + KIND[k][n === 1 ? 0 : 1];
+  const sqFail = msg => Object.assign(new Error(msg), { userMsg:msg });
+
+  async function sqGet(path){
+    if (SQ.cache.has(path)) return SQ.cache.get(path);
+    const j = await jolpi(path); SQ.cache.set(path, j); return j;
+  }
+  async function sqLoad(){
+    if (SQ.ready) return SQ.ready;
+    SQ.ready = (async () => {
+      await loadDriverList();
+      let c = cget('maica-f1-circuits', 30 * DAY);
+      if (!c) { const j = await jolpi('circuits.json?limit=100'); c = j.MRData.CircuitTable.Circuits.map(x => [x.circuitId, x.circuitName, x.Location.locality, x.Location.country]); cset('maica-f1-circuits', c); }
+      SQ.circuits = c;
+      let t = cget('maica-f1-teams', 30 * DAY);
+      if (!t) {
+        t = [];
+        for (let off = 0; off < 400; off += 100) {
+          const j = await jolpi('constructors.json?limit=100&offset=' + off);
+          t.push(...j.MRData.ConstructorTable.Constructors.map(x => [x.constructorId, x.name]));
+          if (t.length >= +j.MRData.total) break;
+        }
+        cset('maica-f1-teams', t);
+      }
+      SQ.teams = t;
+    })().catch(e => { SQ.ready = null; throw e; });
+    return SQ.ready;
+  }
+
+  /* ---- reading the question ---- */
+  const SQ_METRICS = [
+    ['fastest', /\bfastest laps?\b/], ['poles', /\bpoles?\b|\bpole positions?\b/], ['podiums', /\bpodiums?\b/],
+    ['titles', /\b(champions?|titles?|championships?|world champs?)\b/], ['wins', /\b(wins?|won|victor(?:y|ies)|winners?)\b/],
+    ['points', /\bpoints?\b/], ['starts', /\b(starts?|races|entries|grands? prix)\b/] ];
+  const SQ_STOP = new Set(['the', 'and', 'for', 'who', 'how', 'all', 'win', 'won', 'most', 'best', 'top', 'race', 'team', 'car', 'lap', 'pole', 'last', 'this', 'year', 'season', 'first', 'new', 'old', 'big', 'fast']);
+  const SQ_DRIVER_ALIAS = { schumacher:'michael_schumacher', hill:'damon_hill', verstappen:'max_verstappen', andretti:'mario_andretti', brabham:'jack_brabham', fittipaldi:'emerson_fittipaldi', rosberg:'rosberg', piquet:'piquet' };
+  const SQ_TEAM_PREFER = ['ferrari', 'mclaren', 'mercedes', 'red_bull', 'williams', 'alpine', 'renault', 'haas', 'sauber', 'aston_martin', 'alfa', 'alphatauri', 'toro_rosso', 'racing_point', 'force_india', 'lotus_f1', 'lotus', 'brabham', 'tyrrell', 'benetton', 'jordan', 'brawn', 'cooper'];
+  const SQ_CIRCUIT_ALIAS = { 'monte carlo':'monaco', 'cota':'americas', 'austin':'americas', 'singapore':'marina_bay', 'marina bay':'marina_bay', 'sao paulo':'interlagos', 'brazil':'interlagos', 'melbourne':'albert_park', 'australia':'albert_park', 'albert park':'albert_park', 'las vegas':'vegas', 'abu dhabi':'yas_marina', 'yas marina':'yas_marina', 'qatar':'losail', 'lusail':'losail', 'austria':'red_bull_ring', 'red bull ring':'red_bull_ring', 'spielberg':'red_bull_ring', 'britain':'silverstone', 'hungary':'hungaroring', 'belgium':'spa', 'spa':'spa', 'japan':'suzuka', 'netherlands':'zandvoort', 'mexico':'rodriguez', 'mexico city':'rodriguez', 'canada':'villeneuve', 'montreal':'villeneuve', 'malaysia':'sepang', 'china':'shanghai', 'saudi arabia':'jeddah', 'azerbaijan':'baku', 'bahrain':'bahrain', 'sakhir':'bahrain', 'barcelona':'catalunya', 'imola':'imola' };
+
+  function sqSeasons(q, cur){
+    const Y = '(19[5-9]\\d|20[0-3]\\d)'; let m, from = null, to = null;
+    if ((m = q.match(new RegExp(' ' + Y + '(?: (?:to|until|through|thru|and|vs))? ' + Y + ' ')))) { from = +m[1]; to = +m[2]; if (from > to) [from, to] = [to, from]; }
+    else if ((m = q.match(new RegExp(' since ' + Y + ' ')))) { from = +m[1]; to = cur; }
+    else if ((m = q.match(/ last (\d+) (?:seasons?|years?) /))) { from = Math.max(1950, cur - +m[1] + 1); to = cur; }
+    else if ((m = q.match(/ (?:this|current) (?:season|year) /))) { from = to = cur; }
+    else if ((m = q.match(/ last (?:season|year) /))) { from = to = cur - 1; }
+    else if ((m = q.match(new RegExp(' ' + Y + ' ')))) { from = to = +m[1]; }
+    if (m) q = q.replace(m[0], ' ');
+    return { q, from, to };
+  }
+
+  function sqParse(text){
+    const cur = +F1.data.season;
+    let q = ' ' + sqNorm(text) + ' ';
+    const p = { drivers:[], team:null, circuit:null, from:null, to:null, metric:null, notes:[], text };
+    const se = sqSeasons(q, cur); q = se.q; p.from = se.from; p.to = se.to;
+    if (p.to != null && p.to > cur) { p.to = cur; p.notes.push('That season hasn\'t happened yet, so I stopped at ' + cur + '.'); if (p.from > p.to) p.from = p.to; }
+    for (const [k, re] of SQ_METRICS) if (re.test(q)) { p.metric = k; break; }
+
+    // circuit: longest name or nickname found in the question
+    let best = null;
+    const tryKey = (key, id) => { if (key.length >= 3 && q.includes(' ' + key + ' ') && (!best || key.length > best.len)) best = { id, len:key.length }; };
+    SQ.circuits.forEach(([id, name, loc]) => {
+      tryKey(sqNorm(id.replace(/[_-]/g, ' ')), id); tryKey(sqNorm(loc), id);
+      const gen = sqNorm(name).replace(/\b(circuit|international|grand|prix|autodrome|speedway|park|street|de|di|of|the|autodromo|racing|course)\b/g, ' ').replace(/\s+/g, ' ').trim(); tryKey(gen, id);
+    });
+    for (const k in SQ_CIRCUIT_ALIAS) if (SQ.circuits.some(c => c[0] === SQ_CIRCUIT_ALIAS[k])) tryKey(k, SQ_CIRCUIT_ALIAS[k]);
+    if (best) { const c = SQ.circuits.find(x => x[0] === best.id); p.circuit = { id:c[0], name:c[1] }; }
+
+    // drivers: a full name beats a bare surname
+    const curIds = new Set((F1.data.drivers || []).map(r => r[4]).filter(Boolean));
+    const full = [], bySur = new Map();
+    CMP.list.forEach(([id, name]) => {
+      const n = sqNorm(name), last = n.split(' ').pop();
+      if (n.length >= 4 && q.includes(' ' + n + ' ')) full.push({ id, name });
+      else if (last.length >= 3 && !SQ_STOP.has(last) && q.includes(' ' + last + ' ')) (bySur.get(last) || bySur.set(last, []).get(last)).push({ id, name });
+    });
+    const found = [...full];
+    bySur.forEach((cands, sur) => {
+      if (full.some(f => sqNorm(f.name).split(' ').pop() === sur)) return;
+      let pick = cands.find(c => curIds.has(c.id)) || cands.find(c => c.id === SQ_DRIVER_ALIAS[sur]) || cands.find(c => c.id === sur) || cands[0];
+      if (cands.length > 1 && !cands.some(c => curIds.has(c.id) && c === pick)) p.notes.push('Several drivers are called ' + sur.charAt(0).toUpperCase() + sur.slice(1) + ', so I used ' + pick.name + '. Add a first name to pick someone else.');
+      found.push({ ...pick, sur });
+    });
+
+    // team: the same, but a bare surname that is also a team name goes to the team
+    let tb = null;
+    SQ.teams.forEach(([id, name]) => {
+      const key = sqNorm(name.replace(/ F1 Team$/i, ''));
+      if (key.length >= 3 && q.includes(' ' + key + ' ')) {
+        const rank = SQ_TEAM_PREFER.indexOf(id), score = key.length * 100 - (rank < 0 ? 99 : rank);
+        if (!tb || score > tb.score) tb = { id, name:name.replace(/ F1 Team$/i, ''), score };
+      }
+    });
+    if (tb) { p.team = { id:tb.id, name:tb.name }; const t = sqNorm(tb.name); for (let i = found.length - 1; i >= 0; i--) if (found[i].sur && sqNorm(found[i].name).split(' ').pop() === t) found.splice(i, 1); }
+    p.drivers = found.slice(0, 2);
+    if (found.length > 2) p.notes.push('I can compare two drivers at a time, so I used the first two I found.');
+    return p;
+  }
+
+  /* ---- fetching ---- */
+  async function sqRaces(path, prog){      // every page of a results list, one entry per race
+    const map = new Map(); let off = 0, total = 1, pages = 0;
+    while (off < total && pages < 18) {
+      const j = await sqGet(path + (path.includes('?') ? '&' : '?') + 'limit=100&offset=' + off);
+      total = +j.MRData.total; const rs = j.MRData.RaceTable.Races;
+      rs.forEach(r => {
+        const k = r.season + '-' + r.round, ent = r.Results || r.QualifyingResults || [], e = map.get(k);
+        if (e) e.ent.push(...ent); else map.set(k, { season:+r.season, round:+r.round, race:r.raceName, circuit:r.Circuit.circuitName, ent:[...ent] });
+      });
+      off += 100; pages++; if (prog) prog('loading page ' + pages + ' of ' + Math.max(1, Math.ceil(total / 100)) + '…');
+      if (!rs.length) break;
+    }
+    return [...map.values()].sort((a, b) => a.season - b.season || a.round - b.round);
+  }
+  const SQ_TAILS = { wins:['results/1.json'], poles:['qualifying/1.json'], fastest:['fastest/1/results.json'], podiums:['results/1.json', 'results/2.json', 'results/3.json'], starts:['results.json'] };
+  const sqKeep = (kind, e) => kind === 'starts' ? true : kind === 'fastest' ? !!(e.FastestLap && e.FastestLap.rank === '1') : kind === 'podiums' ? ['1', '2', '3'].includes(e.position) : e.position === '1';
+
+  async function sqItems(p, kind, prog, season){     // flat list: one item per qualifying entry
+    const single = season != null ? season : (p.from != null && p.from === p.to ? p.from : null);
+    const base = (single ? single + '/' : '') + (p.circuit ? 'circuits/' + p.circuit.id + '/' : '') + (p.team ? 'constructors/' + p.team.id + '/' : '') + (p.drivers[0] ? 'drivers/' + p.drivers[0].id + '/' : '');
+    const out = [];
+    for (const tail of SQ_TAILS[kind]) {
+      (await sqRaces(base + tail, prog)).forEach(r => r.ent.forEach(e => {
+        if (!sqKeep(kind, e)) return;
+        out.push({ season:r.season, round:r.round, race:r.race, circuit:r.circuit, id:e.Driver.driverId, driver:e.Driver.givenName + ' ' + e.Driver.familyName,
+          team:teamName(e.Constructor ? e.Constructor.name : ''), pos:+e.position });
+      }));
+    }
+    out.sort((a, b) => a.season - b.season || a.round - b.round || a.pos - b.pos);
+    return single || p.from == null ? out : out.filter(x => x.season >= p.from && x.season <= p.to);
+  }
+  async function sqChampion(y){
+    const cur = +F1.data.season, k = 'maica-f1-champ-' + y, hit = cget(k, y < cur ? null : HOURS6); if (hit) return hit;
+    const j = await jolpi(y + '/driverStandings/1.json'), l = j.MRData.StandingsTable.StandingsLists[0], s = l && l.DriverStandings[0];
+    if (!s) return null;
+    const out = { id:s.Driver.driverId, name:s.Driver.givenName + ' ' + s.Driver.familyName, team:teamName((s.Constructors[s.Constructors.length - 1] || {}).name || ''), pts:+s.points, wins:+s.wins };
+    cset(k, out); return out;
+  }
+  async function sqDriverSeasons(id){
+    return (await sqGet('drivers/' + id + '/seasons.json?limit=100')).MRData.SeasonTable.Seasons.map(x => +x.season);
+  }
+
+  /* ---- building answers ---- */
+  const sqScope = p => [p.circuit ? 'at ' + p.circuit.name : '', p.team ? 'with ' + p.team.name : '', p.from != null ? (p.from === p.to ? 'in ' + p.from : 'from ' + p.from + ' to ' + p.to) : ''].filter(Boolean).join(' ');
+  const sqTally = (items, key, label) => {
+    const m = new Map(); items.forEach(x => { const k = x[key]; const e = m.get(k) || { name:x[label], n:0 }; e.n++; m.set(k, e); });
+    return [...m.values()].sort((a, b) => b.n - a.n || a.name.localeCompare(b.name));
+  };
+  const sqLead = t => {                      // names for the top of a tally, honest about ties
+    const n = t[0].n, top = t.filter(x => x.n === n);
+    return { n, names:top.length === 1 ? top[0].name : top.length === 2 ? top[0].name + ' and ' + top[1].name : top.length + ' tied', tied:top.length > 1, count:top.length };
+  };
+  const raceRows = (items, kind) => items.map(x => [x.race, kind === 'podiums' ? 'P' + x.pos : x.team, x.season]);
+
+  async function sqAnswer(p, prog){
+    const cur = +F1.data.season, notes = [...p.notes], filtered = !!(p.team || p.circuit || p.from != null);
+    let kind = p.metric;
+    if (!kind) {
+      if (p.drivers.length && !filtered) return sqProfile(p, prog, notes);
+      if (p.circuit && !p.drivers.length && !p.team && p.from == null) return sqCircuit(p, prog, notes);
+      if (p.from != null && !p.drivers.length && !p.team && !p.circuit) return p.from === p.to ? sqSeason(p, prog, notes) : sqTitles(p, prog, notes);
+      kind = 'wins'; notes.push("You didn't say what to count, so I counted wins.");
+    }
+    if (kind === 'titles') return sqTitles(p, prog, notes);
+    if (kind === 'points') return sqPoints(p, prog, notes);
+    return sqCount(p, kind, prog, notes);
+  }
+
+  async function sqCount(p, kind, prog, notes){
+    if (kind === 'poles') notes.push('Pole counts come from qualifying records, which are incomplete for some older seasons.');
+    if (kind === 'fastest') notes.push('Fastest-lap records only cover more recent seasons.');
+    if (p.drivers.length) {
+      const cards = [];
+      for (const d of p.drivers) {
+        const items = await sqItems({ ...p, drivers:[d] }, kind, prog), n = items.length;
+        cards.push({ head:d.name, big:String(n), sent:kindN(n, kind) + (sqScope(p) ? ' ' + sqScope(p) : '') + '.',
+          blocks: n ? [{ head: kind === 'podiums' ? 'podium finishes' : kind === 'starts' ? 'races' : 'where', rows:raceRows(items.slice().reverse(), kind) }] : [] });
+      }
+      return { cards, notes };
+    }
+    if (kind === 'starts') throw sqFail("Race starts need a driver's name. Try 'Alonso races'.");
+    const none = !p.circuit && !p.team && p.from == null;
+    let items;
+    if (none) {
+      if (kind === 'podiums') throw sqFail("Add a season, circuit, team or driver for podiums. All-time podium tables are too big to pull in one go.");
+      const key = 'maica-f1-top-' + kind, hit = cget(key, 12 * 36e5);
+      let top = hit;
+      if (!top) { items = await sqItems(p, kind, prog); top = sqTally(items, 'id', 'driver').slice(0, 40); cset(key, top); }
+      const ld = sqLead(top);
+      return { cards:[{ head:'All time', big:ld.names, sent:(ld.tied ? 'level at the top with ' : 'leads with ') + kindN(ld.n, kind) + (ld.tied ? ' each.' : '.'), blocks:[{ head:'most ' + KIND[kind][1], rows:top.map(x => [x.name, '', x.n]) }] }], notes };
+    }
+    if (p.from != null && p.from !== p.to && !p.circuit && !p.team) {
+      if (p.to - p.from > 14) throw sqFail('That is a lot of seasons to add up at once. Try a range of 15 years or fewer, or add a driver, team or circuit.');
+      items = [];
+      for (let y = p.from; y <= p.to; y++) { prog('season ' + y + '…'); items.push(...await sqItems(p, kind, prog, y)); }
+    } else items = await sqItems(p, kind, prog);
+    if (!items.length) return { cards:[{ head:sqScope(p) || 'No results', big:'0', sent:'Nothing found for that combination.', blocks:[] }], notes };
+    const scope = sqScope(p), blocks = [];
+    if (items.length <= 5) blocks.push({ head:'who and where', rows:items.slice().reverse().map(x => [x.driver, kind === 'podiums' ? 'P' + x.pos : x.team, x.season + ' ' + x.race]) });
+    else {
+      blocks.push({ head:'most ' + KIND[kind][1] + ' by driver', rows:sqTally(items, 'id', 'driver').slice(0, 25).map(x => [x.name, '', x.n]) });
+      blocks.push({ head:'by team', rows:sqTally(items, 'team', 'team').slice(0, 15).map(x => [x.name, '', x.n]) });
+    }
+    const small = items.length <= 5, ld = small ? null : sqLead(sqTally(items, 'id', 'driver'));
+    const sent = items.length + ' ' + KIND[kind][items.length === 1 ? 0 : 1] + ' counted' + (small ? '.' : ld.tied ? ', with ' + (ld.count > 2 ? 'those drivers' : 'both') + ' level on ' + ld.n + '.' : ', and ' + ld.names + ' has the most.');
+    return { cards:[{ head:'Most ' + KIND[kind][1] + (scope ? ' ' + scope : ''), big:small ? items[items.length - 1].driver : ld.names, sent, blocks }], notes };
+  }
+
+  async function sqProfile(p, prog, notes){
+    const cards = [];
+    for (const d of p.drivers) {
+      const tot = async tail => +(await sqGet('drivers/' + d.id + '/' + tail + '?limit=1')).MRData.total;
+      prog('looking up ' + d.name + '…');
+      const w = await tot('results/1.json'), p2 = await tot('results/2.json'), p3 = await tot('results/3.json'), st = await tot('results.json'), fl = await tot('fastest/1/results.json');
+      const poles = (await sqItems({ ...p, drivers:[d] }, 'poles', prog)).length, yrs = await sqDriverSeasons(d.id);
+      cards.push({ head:d.name, big:String(w), sent:(w === 1 ? 'win' : 'wins') + ' from ' + st + ' starts, across ' + yrs.length + ' season' + (yrs.length === 1 ? '' : 's') + ' (' + Math.min(...yrs) + ' to ' + Math.max(...yrs) + ').',
+        blocks:[{ head:'career', rows:[['wins', '', w], ['podiums', '', w + p2 + p3], ['pole positions', '', poles], ['fastest laps', '', fl], ['race starts', '', st]] }] });
+    }
+    notes.push('Pole counts come from qualifying records, which are incomplete for some older seasons.');
+    return { cards, notes };
+  }
+  async function sqCircuit(p, prog, notes){
+    const wins = await sqItems(p, 'wins', prog), poles = await sqItems(p, 'poles', prog);
+    notes.push('Pole counts come from qualifying records, which are incomplete for some older seasons.');
+    const lw = wins[wins.length - 1];
+    return { cards:[{ head:p.circuit.name, big:String(wins.length), sent:'races held with a recorded winner' + (lw ? ', most recently won by ' + lw.driver + ' in ' + lw.season + '.' : '.'),
+      blocks:[{ head:'most wins', rows:sqTally(wins, 'id', 'driver').slice(0, 15).map(x => [x.name, '', x.n]) }, { head:'most poles', rows:sqTally(poles, 'id', 'driver').slice(0, 15).map(x => [x.name, '', x.n]) }] }], notes };
+  }
+  async function sqSeason(p, prog, notes){
+    const y = p.from, ch = await sqChampion(y), wins = await sqItems(p, 'wins', prog), now = y === +F1.data.season;
+    if (!ch) throw sqFail('No standings found for ' + y + '.');
+    return { cards:[{ head:y + ' season', big:ch.name, sent:(now ? 'leads' : 'won the title') + ' with ' + ch.pts + ' points for ' + ch.team + (now ? ', with the season still in progress.' : '.'),
+      blocks:[{ head:'race wins', rows:sqTally(wins, 'id', 'driver').slice(0, 15).map(x => [x.name, '', x.n]) }] }], notes };
+  }
+  async function sqTitles(p, prog, notes){
+    const cur = +F1.data.season;
+    if (p.team) notes.push("I can only count drivers' titles, so I ignored the team.");
+    if (p.drivers.length) {
+      const cards = [];
+      for (const d of p.drivers) {
+        let yrs = (await sqDriverSeasons(d.id)).filter(y => y < cur && (p.from == null || (y >= p.from && y <= p.to)));
+        const won = [];
+        for (const y of yrs) { prog('checking ' + y + '…'); const c = await sqChampion(y); if (c && c.id === d.id) won.push([y, c]); }
+        cards.push({ head:d.name, big:String(won.length), sent:kindN(won.length, 'titles') + (p.from != null ? ' ' + sqScope({ from:p.from, to:p.to }) : '') + '.', blocks:won.length ? [{ head:'title years', rows:won.map(([y, c]) => [String(y), c.team, c.pts + ' pts']) }] : [] });
+      }
+      return { cards, notes };
+    }
+    const from = p.from != null ? p.from : 1950, to = p.to != null ? p.to : cur - 1, list = [];
+    for (let y = from; y <= to; y++) { prog('checking ' + y + (to - from > 12 ? ' (a long one the first time)' : '') + '…'); const c = await sqChampion(y); if (c) list.push([y, c]); }
+    if (!list.length) throw sqFail('No standings found for that range.');
+    if (to - from <= 12) return { cards:[{ head:'Champions ' + (from === to ? from : from + ' to ' + to), big:list[list.length - 1][1].name, sent:'most recent champion in this range.',
+      blocks:[{ head:'by season', rows:list.slice().reverse().map(([y, c]) => [String(y), c.name, c.team]) }] }], notes };
+    const t = sqTally(list.map(([y, c]) => c), 'id', 'name');
+    const ld = sqLead(t);
+    return { cards:[{ head:'Most world titles' + (p.from != null ? ' ' + sqScope({ from:p.from, to:p.to }) : ''), big:ld.names, sent:(ld.tied ? 'level at the top with ' : 'leads with ') + kindN(ld.n, 'titles') + (ld.tied ? ' each.' : '.'), blocks:[{ head:'titles', rows:t.slice(0, 20).map(x => [x.name, '', x.n]) }] }], notes };
+  }
+  async function sqPoints(p, prog, notes){
+    const cur = +F1.data.season, names = new Map(CMP.list);
+    if (p.drivers.length) {
+      const cards = [];
+      for (const d of p.drivers) {
+        const yrs = (await sqDriverSeasons(d.id)).filter(y => p.from == null || (y >= p.from && y <= p.to)), rows = []; let sum = 0;
+        for (const y of yrs) { prog('season ' + y + '…'); const e = (await loadSeason(y)).m[d.id]; if (e) { sum += e[1]; rows.push([String(y), 'P' + e[0], e[1]]); } }
+        cards.push({ head:d.name, big:String(sum), sent:'championship points' + (p.from != null ? ' ' + sqScope({ from:p.from, to:p.to }) : ' in his career') + '. Scoring systems changed over the years.', blocks:rows.length > 1 ? [{ head:'by season', rows:rows.reverse() }] : [] });
+      }
+      return { cards, notes };
+    }
+    if (p.from == null || p.from !== p.to) throw sqFail("Which season? Try 'points 2024'.");
+    const m = (await loadSeason(p.from)).m, rows = Object.entries(m).sort((a, b) => a[1][0] - b[1][0]).slice(0, 20).map(([id, e]) => [names.get(id) || id, 'P' + e[0], e[1]]);
+    if (!rows.length) throw sqFail('No standings found for ' + p.from + '.');
+    return { cards:[{ head:p.from + ' standings', big:rows[0][0], sent:'top of the table on ' + rows[0][2] + ' points' + (p.from === cur ? ' so far.' : '.'), blocks:[{ head:'points', rows }] }], notes };
+  }
+
+  /* ---- showing answers ---- */
+  function sqStatus(t){ sqOut.textContent = ''; sqOut.append(H('p', { cls:'sq-wait', text:t })); }
+  function sqErr(msg, retry){
+    sqOut.textContent = ''; const q = H('p', { cls:'sq-wait', text:msg });
+    if (retry) q.append(' ', H('button', { type:'button', cls:'btn sm', onclick:retry, text:'Try again' }));
+    sqOut.append(q);
+  }
+  function sqText(p){
+    return [p.drivers.map(d => d.name).join(' and '), p.team && p.team.name, p.circuit && p.circuit.name, p.metric && ({ fastest:'fastest laps', poles:'poles', podiums:'podiums', titles:'titles', wins:'wins', points:'points', starts:'races' })[p.metric],
+      p.from != null && (p.from === p.to ? String(p.from) : p.from + ' to ' + p.to)].filter(Boolean).join(' ');
+  }
+  function sqChips(p){
+    sqChipsEl.textContent = '';
+    const chip = (label, val, drop) => sqChipsEl.append(H('span', { cls:'sq-chip' }, H('small', { text:label }), val, H('button', { type:'button', 'aria-label':'remove ' + label + ' ' + val, onclick:drop, text:'×' })));
+    const again = fn => () => { fn(); sqIn.value = sqText(p); sqExec(p); };
+    p.drivers.forEach((d, i) => chip('driver', d.name, again(() => p.drivers.splice(i, 1))));
+    if (p.team) chip('team', p.team.name, again(() => { p.team = null; }));
+    if (p.circuit) chip('circuit', p.circuit.name, again(() => { p.circuit = null; }));
+    if (p.from != null) chip('seasons', p.from === p.to ? String(p.from) : p.from + ' to ' + p.to, again(() => { p.from = p.to = null; }));
+    if (p.metric) chip('counting', KIND[p.metric][1], again(() => { p.metric = null; }));
+    sqChipsEl.hidden = !sqChipsEl.childNodes.length;
+  }
+  function sqRender(a){
+    sqOut.textContent = '';
+    const cards = H('div', { cls:'sq-cards' });
+    a.cards.forEach(c => {
+      const card = H('div', { cls:'sq-card' }, H('div', { cls:'sq-head', text:c.head }), H('p', { cls:'sq-big' + (/^\d+$/.test(c.big) ? '' : ' txt'), text:c.big }), H('p', { cls:'sq-sent', text:c.sent }));
+      c.blocks.forEach(b => {
+        const tb = H('tbody');
+        b.rows.forEach((r, i) => tb.append(H('tr', { cls:i >= 8 ? 'more' : '' }, H('td', { text:r[0] }), H('td', { cls:'m', text:r[1] }), H('td', { cls:'v', text:r[2] }))));
+        card.append(H('div', { cls:'sq-bh', text:b.head }), H('table', { cls:'sq-t' }, tb));
+        if (b.rows.length > 8) card.append(H('button', { type:'button', cls:'btn sm', style:'margin-top:8px', text:'Show all ' + b.rows.length, onclick:e => { const open = card.classList.toggle('sq-open'); e.target.textContent = open ? 'Show fewer' : 'Show all ' + b.rows.length; } }));
+      });
+      cards.append(card);
+    });
+    sqOut.append(cards);
+    if (a.notes.length) sqOut.append(...[...new Set(a.notes)].map(n => H('p', { cls:'sq-note', text:n })));
+  }
+  function sqHelp(){
+    sqChipsEl.hidden = true; sqChipsEl.textContent = '';
+    sqErr("I couldn't spot a driver, team, circuit or season in that. Try a name plus something to count, like 'Hamilton wins 2024', 'Monaco poles' or 'most titles'.");
+  }
+
+  async function sqExec(p, tok){
+    tok = tok || ++SQ.tok; SQ.p = p; sqChips(p);
+    if (!p.drivers.length && !p.team && !p.circuit && p.from == null && !p.metric) { sqHelp(); return; }
+    sqStatus('looking that up…');
+    try { const a = await sqAnswer(p, s => { if (tok === SQ.tok) sqStatus(s); }); if (tok === SQ.tok) sqRender(a); }
+    catch (e) { if (tok === SQ.tok) sqErr(e && e.userMsg ? e.userMsg : "couldn't get that from the record books right now.", () => sqExec(p)); }
+  }
+  async function sqRun(text){
+    const tok = ++SQ.tok; text = (text || '').trim(); if (!text) return;
+    sqStatus('getting ready…');
+    try { await sqLoad(); } catch (e) { if (tok === SQ.tok) sqErr("couldn't reach the record books right now.", () => sqRun(text)); return; }
+    if (tok !== SQ.tok) return;
+    sqExec(sqParse(text), tok);
+  }
+  $('sqForm').addEventListener('submit', e => { e.preventDefault(); sqRun(sqIn.value); });
+  sqIn.addEventListener('focus', () => { sqLoad().catch(() => {}); }, { once:true });
+  ['Hamilton wins 2024', 'Monaco poles', 'most wins', 'Verstappen titles', 'Ferrari wins at Monza', 'fastest laps 2023', 'champions since 2015', 'points 2021'].forEach(t =>
+    $('sqEx').append(H('button', { type:'button', cls:'sq-eg', text:t, onclick:() => { sqIn.value = t; sqRun(t); } })));
+  $('sqMeta').textContent = 'since 1950';
+
+  /* ------------------------------ keeper mode ------------------------------ */
+  function move(i, dir){
+    const j = i + dir; if (j < 0 || j >= sites.length) return;
+    [sites[i], sites[j]] = [sites[j], sites[i]];
+    sel = j; at = j; jumpTo(j); persist(); render();
+  }
+  function del(i){
+    if (!confirm('Delete "' + (sites[i].title || 'Untitled') + '" from the archive?')) return;
+    sites.splice(i, 1); sel = -1; at = Math.max(0, Math.min(at, sites.length - 1)); jumpTo(at); persist(); render();
+  }
+
+  function renderDesk(){
+    desk.textContent = '';
+    const box = document.createElement('div'); box.className = 'desk';
+    const st = document.createElement('strong'); st.textContent = "keeper's desk"; box.append(st);
+    const p = document.createElement('p');
+    p.textContent = hasDraft
+      ? 'This is a draft on this device only. Maica will not see it until you download the updated file and upload it to GitHub.'
+      : 'Nothing changed yet. Add a website, then download the updated file to publish it.';
+    box.append(p);
+    const row = document.createElement('div'); row.className = 'btnrow';
+    const mk = (label, fn, cls) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn ' + (cls || ''); b.textContent = label; b.addEventListener('click', fn); return b; };
+    row.append(
+      mk('+ Add a website', () => openDialog(-1), 'primary'),
+      mk('Download updated index.html', downloadHtml),
+      mk('Copy data instead', copyData),
+      mk('Discard draft', discard)
+    );
+    box.append(row); desk.append(box);
+  }
+
+  function dataBlock(){
+    const json = JSON.stringify(sites, null, 2).replace(/</g, '\\u003c');
+    return '/*DATA-START*/\n  const SITES = ' + json.replace(/\n/g, '\n  ') + ';\n  /*DATA-END*/';
+  }
+  async function downloadHtml(){
+    try {
+      const res = await fetch(location.pathname, { cache: 'no-store' });
+      if (!res.ok) throw new Error('fetch failed');
+      const src = await res.text();
+      const re = /\/\*DATA-START\*\/[\s\S]*?\/\*DATA-END\*\//;
+      if (!re.test(src)) throw new Error('markers missing');
+      const out = src.replace(re, () => dataBlock());
+      const blob = new Blob([out], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'index.html';
+      document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      toast('Downloaded. Upload it to GitHub to publish.');
+    } catch (e) {
+      await copyData(true);
+    }
+  }
+  async function copyData(fromFallback){
+    const text = dataBlock();
+    try {
+      await navigator.clipboard.writeText(text);
+      toast(fromFallback === true
+        ? "Couldn't build the file here, so the data block was copied. Paste it over the old one in index.html."
+        : 'Copied. Paste it over the old data block in index.html.');
+    } catch (e) {
+      window.prompt('Copy this and paste it over the old data block in index.html:', text);
+    }
+  }
+  function discard(){
+    if (!confirm('Throw away this draft and go back to the published list?')) return;
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    sites = JSON.parse(JSON.stringify(SITES)); hasDraft = false;
+    sel = sites.length ? 0 : -1; at = 0; jumpTo(0); render();
+  }
+
+  /* add / edit dialog */
+  const dlg = $('dlg');
+  let editing = -1, imgData = '', titleTried = false;
+  function setPreview(){
+    $('fPreview').hidden = !imgData; if (imgData) $('fPreview').src = imgData;
+    $('fClear').hidden = !imgData;
+    $('fPick').textContent = imgData ? 'Change photo' : 'Add a small photo';
+  }
+  function openDialog(i){
+    editing = i;
+    const s = i >= 0 ? sites[i] : { title:'', date:'', note:'', url:'', img:'', html:'' };
+    $('dlgTitle').textContent = i >= 0 ? 'Edit this website' : 'Add a website';
+    $('fTitle').value = s.title; $('fDate').value = s.date; $('fNote').value = s.note; $('fUrl').value = s.url; $('fUrlWrap').hidden = !s.url;
+    imgData = s.img || ''; setPreview();
+    $('fCode').value = s.html || ''; titleTried = i >= 0; codeInfo();
+    dlg.showModal(); $('fTitle').focus();
+  }
+  function codeInfo(){
+    const v = $('fCode').value, has = v.trim().length > 0, kb = new Blob([v]).size / 1024;
+    $('fCodeTry').hidden = $('fCodeClear').hidden = !has;
+    $('fCodePick').textContent = has ? 'Replace with a file' : 'Upload an .html file';
+    $('fCodeInfo').textContent = has ? 'Code added, ' + (kb < 1 ? 'under 1 KB' : kb < 1024 ? Math.round(kb) + ' KB' : (kb / 1024).toFixed(1) + ' MB') + '. It opens inside the archive.' : 'Optional. Leave this empty if the site is hosted somewhere else and you have a link.';
+    const warn = [];
+    if (has) {
+      const missing = [...new Set([...v.matchAll(/(?:src|href)\s*=\s*["'](?!https?:|data:|#|mailto:|\/\/|blob:|javascript:)([^"']+\.(?:png|jpe?g|gif|webp|svg|css|js|mp3|mp4|webm|woff2?|ico))["']/gi)].map(m => m[1]))];
+      if (missing.length) warn.push('This page points to separate files (' + missing.slice(0, 3).join(', ') + (missing.length > 3 ? ' and ' + (missing.length - 3) + ' more' : '') + '). Those will not come along, so use full web addresses or build them into the page.');
+      if (kb > 1024) warn.push('That is a big page. A few like this will make the archive slower to open.');
+      if (!/<\s*(html|body|div|script|p|h1)\b/i.test(v)) warn.push('This does not look like page code. Paste the whole thing, starting from <!DOCTYPE html> or <html>.');
+      if (!titleTried && !$('fTitle').value.trim()) {
+        titleTried = true;
+        try { const t = new DOMParser().parseFromString(v, 'text/html').title.trim(); if (t) $('fTitle').value = t.slice(0, 80); } catch (e) {}
+      }
+    }
+    $('fCodeWarn').hidden = !warn.length; $('fCodeWarn').textContent = warn.join(' ');
+  }
+  $('fCode').addEventListener('input', codeInfo);
+  $('fCodePick').addEventListener('click', () => $('fCodeFile').click());
+  $('fCodeFile').addEventListener('change', async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try { $('fCode').value = await f.text(); titleTried = false; codeInfo(); } catch (err) { toast("That file couldn't be read."); }
+    e.target.value = '';
+  });
+  $('fCodeClear').addEventListener('click', () => { $('fCode').value = ''; codeInfo(); });
+  $('fCodeTry').addEventListener('click', () => openViewer($('fTitle').value.trim() || 'Preview', $('fCode').value));
+  $('fCancel').addEventListener('click', () => dlg.close());
+  $('fPick').addEventListener('click', () => $('fFile').click());
+  $('fClear').addEventListener('click', () => { imgData = ''; $('fFile').value = ''; setPreview(); });
+  $('fFile').addEventListener('change', e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      const im = new Image();
+      im.onload = () => {
+        const max = 320, k = Math.min(1, max / Math.max(im.width, im.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        imgData = c.toDataURL('image/jpeg', 0.78); setPreview();
+      };
+      im.onerror = () => toast("That file couldn't be read as a picture.");
+      im.src = r.result;
+    };
+    r.readAsDataURL(f);
+  });
+  $('form').addEventListener('submit', e => {
+    e.preventDefault();
+    const title = $('fTitle').value.trim();
+    if (!title) { $('fTitle').focus(); return; }
+    const entry = {
+      title,
+      date: $('fDate').value.trim(),
+      note: $('fNote').value.trim(),
+      url: safeUrl($('fUrl').value),
+      img: imgData,
+      html: $('fCode').value.trim()
+    };
+    const isNew = editing < 0;
+    if (isNew) { sites.unshift(entry); sel = 0; at = 0; jumpTo(0); }
+    else { sites[editing] = entry; }
+    persist(); dlg.close(); render();
+    toast(isNew ? 'Added to the top of the grid.' : 'Saved.');
+  });
+
+  /* go */
+  render();
+  jumpTo(0);
+  startSeq();
+  renderF1();
+  loadF1();
+  stInit();
+
+  /* ---------- christmas teaser (edit XMAS to change the message) ---------- */
+  (function(){
+    const XMAS = {
+      when: '2026-12-15T00:00:00+08:00',
+      teaser: "Box box. Something new is being built for you, and it lands this December. No spoilers.",
+      arrived: "Lights out. It's here, and something new is waiting for you."
+    };
+    const box = $('radio'); if(!box) return;
+    const KEY='maica-radio-dec-2026';
+    try{ if(localStorage.getItem(KEY)==='1') return; }catch(e){}
+    const end = new Date(XMAS.when).getTime();
+    const cd = $('radioCd');
+    const tick = () => {
+      let ms = end - Date.now();
+      if(ms <= 0){ $('radioMsg').textContent = XMAS.arrived; cd.textContent = ''; return false; }
+      const d = Math.floor(ms/864e5), h = Math.floor(ms%864e5/36e5), m = Math.floor(ms%36e5/6e4);
+      cd.innerHTML = '<b>'+d+'</b>d <b>'+String(h).padStart(2,'0')+'</b>h <b>'+String(m).padStart(2,'0')+'</b>m';
+      return true;
+    };
+    $('radioMsg').textContent = XMAS.teaser;
+    box.hidden = false;
+    if(tick()) setInterval(tick, 30000);
+    $('radioX').addEventListener('click', () => {
+      box.hidden = true;
+      try{ localStorage.setItem(KEY,'1'); }catch(e){}
+    });
+  })();
+</script>
+</body>
+</html>
