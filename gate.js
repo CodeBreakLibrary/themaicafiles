@@ -254,7 +254,7 @@
     el.querySelector('.g-flag').addEventListener('click', function () {
       if (busy || el.querySelector('.g-egg')) return;
       taps++; clearTimeout(tapTimer); tapTimer = setTimeout(function () { taps = 0; }, 2500);
-      if (taps < 5) return;
+      if (taps < 10) return;
       taps = 0; eggFound = true;
       function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
       var egg = document.createElement('div');
