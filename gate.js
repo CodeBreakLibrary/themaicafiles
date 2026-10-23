@@ -21,7 +21,7 @@
   //
   // A BIT SAFER: open make-hash.html, type a password, and paste the line it
   // gives you over the next line instead. Then the password isn't readable here.
-  var GATE = { password: '' };
+  var GATE = { password: 'dinosaur' };
 
   // The cars, in the order they drive in (up to 8). Top-down pictures, nose pointing UP,
   // transparent background. Add or remove files here.
@@ -30,9 +30,9 @@
   // If she finds the menu first, the normal unlock gets a little surprise (cars spin out, confetti).
   var EGG = {
     title: 'Woah, you found it',
-    cipher: 'fdbhmyud',          // shown in the menu; leave '' to hide this line
-    key: '',                     // <-- type the key here
-    note: ''                     // optional extra line, e.g. a nudge
+    cipher: 'cypher starts w a v',          // shown in the menu; leave '' to hide this line
+    key: 'fdbhmyud',                     // <-- type the key here
+    note: 'hehe'                     // optional extra line, e.g. a nudge
   };
   var CARS = ['cars/car1.webp', 'cars/car2.webp', 'cars/car3.webp', 'cars/car4.webp', 'cars/car5.webp'];
   // =============================================
