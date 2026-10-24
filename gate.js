@@ -48,7 +48,7 @@
   ];   // all five by Dave Love (Sketchfab: Tyler_Dave)
   // If a car sits sideways or backwards, add the missing degrees here (0, 90, 180, 270), one per car.
   var EMBED_TURN = [0, 0, 0, 0, 0];
-  var EMBED_WAIT = 20000;   // ms to wait for a 3D car before using its picture instead
+  var EMBED_WAIT = 60000;   // ms to wait for a 3D car before using its picture instead
   var VIEWER_API = 'https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js';
   // =============================================
 
@@ -137,6 +137,9 @@
         drop-shadow(10px 14px 12px rgba(40,0,0,.55));
     }
     #gate .g-car img{ display:block; max-width:none; user-select:none; -webkit-user-drag:none; }
+    #gate .g-load{ position:absolute; left:50%; bottom:max(18px,env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:3; width:min(260px,70%); text-align:center; color:#fff; font:12px/1.4 system-ui,sans-serif; letter-spacing:.04em; text-shadow:0 1px 2px rgba(0,0,0,.6); pointer-events:none; transition:opacity .4s; }
+    #gate .g-load i{ display:block; height:4px; margin-top:6px; border-radius:2px; background:rgba(255,255,255,.28); overflow:hidden; }
+    #gate .g-load b{ display:block; height:100%; width:0; background:#fff; transition:width .4s; }
     #gate .g-car iframe{ position:absolute; left:50%; top:50%; border:0; background:transparent; pointer-events:none; max-width:none; }
 
     #gate .g-card{
@@ -252,7 +255,7 @@
 
     // the cars: each is a 3D embed if it has an id, else (or if the embed fails) its picture.
     // Anything that fails completely is simply left out.
-    var pending = 0;
+    var pending = 0, total = 0, bar = null, barFill = null, barTxt = null;
     var wantEmbed = EMBEDS.some(function (u) { return !!u; });
     CARS.slice(0, SPOTS.length).forEach(function (src, i) {
       var box = document.createElement('div');
@@ -309,7 +312,14 @@
         });
       } else usePicture('no id, using picture');
     });
-    function done() { if (--pending === 0) { cars = cars.filter(function (c) { return c.loaded; }); built = true; maybeIntro(); } }
+    function done() {
+      pending--;
+      if (bar) { barFill.style.width = ((total - pending) / total * 100) + '%'; barTxt.textContent = 'loading cars ' + (total - pending) + '/' + total; }
+      if (pending === 0) {
+        if (bar) { var b = bar; bar = null; b.style.opacity = '0'; setTimeout(function () { b.remove(); }, 450); }
+        cars = cars.filter(function (c) { return c.loaded; }); built = true; maybeIntro();
+      }
+    }
     // add #debug to the page address to see on screen why a car used its picture
     function note(t) {
       try { console.warn('[gate3d] ' + t); } catch (e) {}
@@ -328,6 +338,12 @@
       s.src = VIEWER_API; s.onload = function () { end(true); }; s.onerror = function () { end(false); };
       setTimeout(function () { end(false); }, 6000);
       document.head.appendChild(s);
+    }
+    total = pending;
+    if (wantEmbed && total) {
+      bar = document.createElement('div'); bar.className = 'g-load';
+      bar.innerHTML = '<span>loading cars 0/' + total + '</span><i><b></b></i>';
+      barTxt = bar.firstChild; barFill = bar.querySelector('b'); el.appendChild(bar);
     }
     if (!pending) { built = true; }
 
