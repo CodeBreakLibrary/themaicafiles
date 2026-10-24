@@ -21,7 +21,7 @@
   //
   // A BIT SAFER: open make-hash.html, type a password, and paste the line it
   // gives you over the next line instead. Then the password isn't readable here.
-  var GATE = { password: 'dinosaur' };
+  var GATE = { password: '' };
 
   // The cars, in the order they drive in (up to 8). Top-down pictures, nose pointing UP,
   // transparent background. Add or remove files here.
@@ -30,13 +30,26 @@
   // If she finds the menu first, the normal unlock gets a little surprise (cars spin out, confetti).
   var EGG = {
     title: 'Woah, you found it',
-    cipher: 'really famous cipher',          // shown in the menu; leave '' to hide this line
-    key: 'fdbhmyud',                     // <-- type the key here
+    cipher: 'fdbhmyud',          // shown in the menu; leave '' to hide this line
+    key: '',                     // <-- type the key here
     note: '',                    // optional extra line, e.g. a nudge
-    taps: 10,                     // <-- how many taps on the checkered flag it takes
+    taps: 5,                     // <-- how many taps on the checkered flag it takes
     within: 2.5                  // ...and how many seconds she has to do them in (the count restarts after that)
   };
   var CARS = ['cars/car1.webp', 'cars/car2.webp', 'cars/car3.webp', 'cars/car4.webp', 'cars/car5.webp'];
+  // 3D EMBEDS (Sketchfab). One entry per car, same order as CARS. Paste the model id (the long code at the end
+  // of the Sketchfab page address). Leave '' to use that car's picture instead. All empty = pictures only.
+  var EMBEDS = [
+    '0a3d24a58e0549d591a5a48c22eec383',   // 1 Red Bull RB22
+    'b806f1e70aa343219e7158169549b97b',   // 2 Mercedes W17
+    '32bf228264b047669b100b0f1b8769ac',   // 3 Audi R26
+    '95bcd37aa7c649779efc33b90b6c023e',   // 4 Cadillac MAC-26
+    'e5ca6cecdc42449283f4bed27360f2a7'    // 5 Ferrari SF-26
+  ];   // all five by Dave Love (Sketchfab: Tyler_Dave)
+  // If a car sits sideways or backwards, add the missing degrees here (0, 90, 180, 270), one per car.
+  var EMBED_TURN = [0, 0, 0, 0, 0];
+  var EMBED_WAIT = 20000;   // ms to wait for a 3D car before using its picture instead
+  var VIEWER_API = 'https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js';
   // =============================================
 
   // true  = remember her on this device after she gets it right (no password box next time).
@@ -124,6 +137,7 @@
         drop-shadow(10px 14px 12px rgba(40,0,0,.55));
     }
     #gate .g-car img{ display:block; max-width:none; user-select:none; -webkit-user-drag:none; }
+    #gate .g-car iframe{ position:absolute; left:50%; top:50%; border:0; background:transparent; pointer-events:none; max-width:none; }
 
     #gate .g-card{
       position:relative; z-index:2; width:min(100%,380px); text-align:center;
@@ -236,22 +250,85 @@
     bg = el.querySelector('.g-bg');
     card = el.querySelector('.g-card');
 
-    // the cars: images load in the background; any that fail are simply left out
+    // the cars: each is a 3D embed if it has an id, else (or if the embed fails) its picture.
+    // Anything that fails completely is simply left out.
     var pending = 0;
+    var wantEmbed = EMBEDS.some(function (u) { return !!u; });
     CARS.slice(0, SPOTS.length).forEach(function (src, i) {
-      var img = new Image(), box = document.createElement('div');
-      box.className = 'g-car'; img.alt = ''; img.draggable = false;
-      box.setAttribute('aria-hidden', 'true');
-      box.appendChild(img);
-      var c = { img: img, box: box, spot: SPOTS[i], loaded: false };
+      var box = document.createElement('div');
+      box.className = 'g-car'; box.setAttribute('aria-hidden', 'true');
+      var c = { img: null, box: box, spot: SPOTS[i], loaded: false, embed: false, turn: EMBED_TURN[i] || 0 };
       pending++;
-      img.onload = function () { c.loaded = true; done(); };
-      img.onerror = function () { box.remove(); done(); };
-      img.src = base + src;
       el.insertBefore(box, card);
       cars.push(c);
+      var stage = 'script';
+      function usePicture(why) {
+        if (c.settled) return; c.settled = true;
+        if (typeof why !== 'string' && c.embed !== undefined && stage !== 'none') why = 'failed at: ' + stage + (why && why.message ? ' (' + why.message + ')' : '');
+        if (EMBEDS[i]) note('car ' + (i + 1) + ' -> picture. ' + (typeof why === 'string' ? why : ''));
+        if (c.img) c.img.remove();
+        var img = new Image(); img.alt = ''; img.draggable = false;
+        c.img = img; c.embed = false; box.appendChild(img);
+        img.onload = function () { c.loaded = true; done(); };
+        img.onerror = function () { box.remove(); done(); };
+        img.src = base + src;
+      }
+      if (EMBEDS[i] && wantEmbed) {
+        viewerApi(function (ok) {
+          if (!ok) { usePicture('Sketchfab script did not load (blocked or offline)'); return; }
+          stage = 'init';
+          var f = document.createElement('iframe');
+          f.title = ''; f.tabIndex = -1; f.setAttribute('allow', 'autoplay; xr-spatial-tracking');
+          c.img = f; c.embed = true; box.appendChild(f);
+          var timer = setTimeout(function () { usePicture('timed out after ' + EMBED_WAIT / 1000 + 's, stuck at: ' + stage); }, EMBED_WAIT);
+          function ready() { if (c.settled) return; c.settled = true; clearTimeout(timer); c.loaded = true; note('car ' + (i + 1) + ' 3D ready'); done(); }
+          try {
+            new window.Sketchfab(f).init(EMBEDS[i], {
+              success: function (api) {
+                stage = 'loading model'; api.start();
+                api.addEventListener('viewerready', function () {
+                  stage = 'camera';
+                  setTimeout(ready, 2500);   // if the camera call never answers, show the car anyway
+                  // look straight down from the model's default distance
+                  api.getCameraLookAt(function (err, cam) {
+                    if (!err && cam) {
+                      var p = cam.position, t = cam.target;
+                      var d = Math.sqrt(Math.pow(p[0]-t[0],2) + Math.pow(p[1]-t[1],2) + Math.pow(p[2]-t[2],2)) || 1;
+                      api.setCameraLookAt([t[0], t[1], t[2] + d], t, 0, function () { setTimeout(ready, 150); });
+                    } else ready();
+                  });
+                });
+              },
+              error: function () { usePicture('Sketchfab refused to start this model (private, deleted, or not embeddable)'); },
+              autostart: 0, preload: 1, transparent: 1, dnt: 1, camera: 0, autospin: 0,
+              ui_controls: 0, ui_infos: 0, ui_stop: 0, ui_watermark: 0, ui_watermark_link: 0, ui_hint: 0,
+              ui_help: 0, ui_settings: 0, ui_inspector: 0, ui_vr: 0, ui_ar: 0, ui_fullscreen: 0,
+              ui_annotations: 0, ui_animations: 0, ui_loading: 0, scrollwheel: 0, double_click: 0
+            });
+          } catch (e) { usePicture('error: ' + e.message); }
+        });
+      } else usePicture('no id, using picture');
     });
     function done() { if (--pending === 0) { cars = cars.filter(function (c) { return c.loaded; }); built = true; maybeIntro(); } }
+    // add #debug to the page address to see on screen why a car used its picture
+    function note(t) {
+      try { console.warn('[gate3d] ' + t); } catch (e) {}
+      if (location.hash !== '#debug') return;
+      var d = document.getElementById('g3d-debug');
+      if (!d) { d = document.createElement('div'); d.id = 'g3d-debug'; d.style.cssText = 'position:fixed;left:4px;right:4px;bottom:4px;z-index:99999;background:rgba(0,0,0,.8);color:#fff;font:11px/1.35 monospace;padding:6px;pointer-events:none;white-space:pre-wrap'; document.body.appendChild(d); }
+      d.textContent += t + '\n';
+    }
+    // load Sketchfab's small helper script once; ok(false) if it can't be reached
+    function viewerApi(cb) {
+      if (window.Sketchfab) { cb(true); return; }
+      var q = viewerApi.q || (viewerApi.q = []); q.push(cb);
+      if (q.length > 1) return;
+      var s = document.createElement('script'), fin = false;
+      function end(ok) { if (fin) return; fin = true; q.forEach(function (f) { f(ok && !!window.Sketchfab); }); }
+      s.src = VIEWER_API; s.onload = function () { end(true); }; s.onerror = function () { end(false); };
+      setTimeout(function () { end(false); }, 6000);
+      document.head.appendChild(s);
+    }
     if (!pending) { built = true; }
 
     var msg = el.querySelector('.g-msg');
@@ -320,9 +397,10 @@
     var m = Math.max(6, W * 0.015);                             // gap to the screen edge
     var narrow = W < 600;
     cars.forEach(function (c) {
-      var w = h * c.img.naturalWidth / c.img.naturalHeight;
+      var w = c.embed ? h * 0.5 : h * c.img.naturalWidth / c.img.naturalHeight;   // 3D cars: a car is about half as wide as long
       c.w = w; c.h = h;
-      c.img.style.width = w + 'px'; c.img.style.height = h + 'px';
+      if (c.embed) { var side = h * 1.15; c.img.style.width = side + 'px'; c.img.style.height = side + 'px'; c.img.style.marginLeft = c.img.style.marginTop = (-side / 2) + 'px'; }
+      else { c.img.style.width = w + 'px'; c.img.style.height = h + 'px'; }
       c.box.style.width = w + 'px'; c.box.style.height = h + 'px';
       var a = c.spot.heading * Math.PI / 180, sn = Math.sin(a), cs = Math.cos(a);
       var hw = (w * Math.abs(cs) + h * Math.abs(sn)) / 2;       // half-size of the turned car's bounding box
@@ -351,8 +429,8 @@
     });
   }
   function put(c, x, y) {
-    if (gs) { gs.set(c.box, { x: x, y: y }); gs.set(c.img, { rotation: c.spot.heading, transformOrigin: '50% 50%' }); }
-    else { c.box.style.transform = 'translate(' + x + 'px,' + y + 'px)'; c.img.style.transform = 'rotate(' + c.spot.heading + 'deg)'; }
+    if (gs) { gs.set(c.box, { x: x, y: y }); gs.set(c.img, { rotation: c.spot.heading + (c.embed ? c.turn : 0), transformOrigin: '50% 50%' }); }
+    else { c.box.style.transform = 'translate(' + x + 'px,' + y + 'px)'; c.img.style.transform = 'rotate(' + (c.spot.heading + (c.embed ? c.turn : 0)) + 'deg)'; }
   }
   function showParked() { cars.forEach(function (c) { put(c, c.px, c.py); c.box.style.visibility = 'visible'; }); parked = true; }
 
@@ -371,7 +449,7 @@
     var tl = gs.timeline({ delay: 0.5, onComplete: function () { parked = true; } });   // empty page first, then they arrive
     cars.forEach(function (c, i) {
       var T = 0.85 + c.D / 1500;                        // a longer drive takes a little longer
-      gs.set(c.img, { rotation: c.spot.heading, transformOrigin: '50% 50%' });
+      gs.set(c.img, { rotation: c.spot.heading + (c.embed ? c.turn : 0), transformOrigin: '50% 50%' });
       tl.fromTo(c.box, { x: c.sx, y: c.sy, autoAlpha: 1 },
                        { x: c.px, y: c.py, duration: T, ease: 'power3.out' }, i * 0.5);
     });
