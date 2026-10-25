@@ -21,7 +21,7 @@
   //
   // A BIT SAFER: open make-hash.html, type a password, and paste the line it
   // gives you over the next line instead. Then the password isn't readable here.
-  var GATE = { password: 'dinosaur' };
+  var GATE = { password: '' };
 
   // The cars, in the order they drive in (up to 8). Top-down pictures, nose pointing UP,
   // transparent background. Add or remove files here.
@@ -30,10 +30,10 @@
   // If she finds the menu first, the normal unlock gets a little surprise (cars spin out, confetti).
   var EGG = {
     title: 'Woah, you found it',
-    cipher: 'veering',          // shown in the menu; leave '' to hide this line
-    key: 'fdbhmyud',                     // <-- type the key here
+    cipher: 'fdbhmyud',          // shown in the menu; leave '' to hide this line
+    key: '',                     // <-- type the key here
     note: '',                    // optional extra line, e.g. a nudge
-    taps: 10,                     // <-- how many taps on the checkered flag it takes
+    taps: 5,                     // <-- how many taps on the checkered flag it takes
     within: 2.5                  // ...and how many seconds she has to do them in (the count restarts after that)
   };
   var CARS = ['cars/car1.webp', 'cars/car2.webp', 'cars/car3.webp', 'cars/car4.webp', 'cars/car5.webp'];
@@ -136,6 +136,8 @@
     #gate .g-load{ position:absolute; left:50%; bottom:max(18px,env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:3; width:min(260px,70%); text-align:center; color:#fff; font:12px/1.4 system-ui,sans-serif; letter-spacing:.04em; text-shadow:0 1px 2px rgba(0,0,0,.6); pointer-events:none; transition:opacity .4s; }
     #gate .g-load i{ display:block; height:4px; margin-top:6px; border-radius:2px; background:rgba(255,255,255,.28); overflow:hidden; }
     #gate .g-load b{ display:block; height:100%; width:0; background:#fff; transition:width .4s; }
+    #gate.nocard .g-card, #gate.nocard .g-load{ display:none !important; }
+    #gate .g-skid{ position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none; }
     #gate .g-car img{ display:block; max-width:none; user-select:none; -webkit-user-drag:none; }
 
     #gate .g-card{
@@ -231,6 +233,7 @@
     var configured = !!(GATE.password || (GATE.hash && GATE.salt));
     el = document.createElement('div');
     el.id = 'gate';
+    if (location.hash === '#nocard') el.classList.add('nocard');   // for screenshots: hides the password box
     el.innerHTML =
       '<div class="g-bg"></div>'
       + '<div class="g-card" role="dialog" aria-modal="true" aria-labelledby="g-t">'
@@ -522,10 +525,31 @@
     if (REMEMBER) { try { localStorage.setItem(KEY, token()); } catch (e) {} }
     input.disabled = true; btn.disabled = true;
     card.classList.remove('nope');
-    if (special) celebrate(leave); else leave();
+    if (special) celebrate(function () { leave(true); }); else leave(false);
   }
 
-  function leave() {
+  // ---- the exit: a burnout spin, then every car drives off forward on a curve, leaving tyre marks ----
+  function tyrePts(c, s) {                       // the four tyres [rear-left, rear-right, front-left, front-right]
+    var a = s.r * Math.PI / 180, fx = Math.sin(a), fy = -Math.cos(a), rx = Math.cos(a), ry = Math.sin(a);
+    var lat = c.w * 0.36, rear = -c.h * 0.26, front = c.h * 0.28;
+    return [[-lat, rear], [lat, rear], [-lat, front], [lat, front]].map(function (q) {
+      return [s.x + rx * q[0] + fx * q[1], s.y + ry * q[0] + fy * q[1]];
+    });
+  }
+  function mark(cx, c, p, q) {                   // draw tyre lines from state p to state q (x, y of the car's centre, r = degrees)
+    var n = Math.max(1, Math.ceil(Math.max(Math.hypot(q.x - p.x, q.y - p.y) / 5, Math.abs(q.r - p.r) / 4)));
+    var prev = tyrePts(c, p), lw = Math.max(3, c.h * 0.04);
+    cx.lineWidth = lw;
+    for (var k = 1; k <= n; k++) {
+      var t = k / n, cur = tyrePts(c, { x: p.x + (q.x - p.x) * t, y: p.y + (q.y - p.y) * t, r: p.r + (q.r - p.r) * t });
+      for (var j = 0; j < 4; j++) {
+        cx.strokeStyle = j < 2 ? 'rgba(12,8,8,.55)' : 'rgba(12,8,8,.3)';   // rear tyres dig in harder
+        cx.beginPath(); cx.moveTo(prev[j][0], prev[j][1]); cx.lineTo(cur[j][0], cur[j][1]); cx.stroke();
+      }
+      prev = cur;
+    }
+  }
+  function leave(spun) {                         // spun = the easter egg already spun the cars
 
     if (!gs || reduce || !cars.length) {            // no GSAP, reduced motion, or no cars: a plain fade
       el.classList.add('out');
@@ -535,17 +559,72 @@
     }
 
     gs.killTweensOf(cars.map(function (c) { return c.box; }));   // in case she's quick and the cars are still arriving
-    layout();
-    var n = cars.length;
-    var tl = gs.timeline({ onComplete: cleanup });
+    var W = el.clientWidth, H = el.clientHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
+    var cv = document.createElement('canvas'), cx = cv.getContext && cv.getContext('2d');
+    if (cx) {                                       // the layer the tyre marks are painted on, under the cars
+      cv.className = 'g-skid'; cv.width = W * dpr; cv.height = H * dpr;
+      cx.scale(dpr, dpr); cx.lineCap = 'butt';
+      el.insertBefore(cv, bg.nextSibling);
+    }
+    var L = Math.max(W, H) * 1.35;
+    var CURVE = [0.9, -0.85, 0.65, -0.55, 0.4];     // which way, and how hard, each car swings (+ right, - left)
+    var SPIN = 0.9, GAP = 0.04, DRIVE = 1.3, STEP = 0.12;
+    var MARK_LIFE = 0.35;                           // seconds a skid mark takes to mostly fade (smaller = vanishes faster)
+    var DRIFT = 28;                                 // how far (degrees) the nose swings past the direction of travel; scaled by each car's curve
+    // the marks fade away behind the cars: every 0.1 s the whole layer is rubbed out a little
+    var acc = 0, lastT = gs.ticker.time;
+    function fadeMarks() {
+      var now = gs.ticker.time; acc += now - lastT; lastT = now;
+      if (!cx || acc < 0.1) return;
+      cx.save(); cx.globalCompositeOperation = 'destination-out';
+      cx.fillStyle = 'rgba(0,0,0,' + (1 - Math.exp(-acc / MARK_LIFE)) + ')'; cx.fillRect(0, 0, W, H); cx.restore(); acc = 0;
+    }
+    gs.ticker.add(fadeMarks);
+    var tl = gs.timeline({ onComplete: function () { gs.ticker.remove(fadeMarks); cleanup(); } });
     tl.to(card, { autoAlpha: 0, y: -10, duration: 0.25, ease: 'power2.out' }, 0);
+
+    var lastEnd = 0;
     cars.slice().reverse().forEach(function (c, k) {   // last to park is first to leave
-      var T = 0.6 + c.D / 1600;
-      tl.to(c.box, { x: c.sx, y: c.sy, duration: T, ease: 'power2.in' }, 0.1 + k * 0.14);
+      var x0 = gs.getProperty(c.box, 'x') + c.w / 2, y0 = gs.getProperty(c.box, 'y') + c.h / 2;
+      if (x0 < 0 || x0 > W || y0 < 0 || y0 > H) { gs.set(c.box, { autoAlpha: 0 }); return; }   // still on its way in: skip it
+      var r0 = gs.getProperty(c.img, 'rotation'), dir = k % 2 ? -1 : 1;
+      var spin = spun ? 0 : dir * 720, rEnd = r0 + spin, a = rEnd * Math.PI / 180;
+      var fx = Math.sin(a), fy = -Math.cos(a), rx = Math.cos(a), ry = Math.sin(a);   // forward and right
+      var sd = CURVE[k % CURVE.length], side = Math.abs(sd), sg = sd < 0 ? -1 : 1;
+      function pt(f, l) { return [x0 + fx * L * f + rx * L * l * sg, y0 + fy * L * f + ry * L * l * sg]; }
+      var P0 = [x0, y0], P1 = pt(0.28, 0), P2 = pt(0.5, 0.38 * side), P3 = pt(0.95, 0.95 * side);
+      function bez(t) {
+        var u = 1 - t, A = u * u * u, B = 3 * u * u * t, C = 3 * u * t * t, D = t * t * t;
+        return [A * P0[0] + B * P1[0] + C * P2[0] + D * P3[0], A * P0[1] + B * P1[1] + C * P2[1] + D * P3[1]];
+      }
+      function tan(t) {
+        var u = 1 - t;
+        return [3 * u * u * (P1[0] - P0[0]) + 6 * u * t * (P2[0] - P1[0]) + 3 * t * t * (P3[0] - P2[0]),
+                3 * u * u * (P1[1] - P0[1]) + 6 * u * t * (P2[1] - P1[1]) + 3 * t * t * (P3[1] - P2[1])];
+      }
+      var prev = { x: x0, y: y0, r: r0 };
+      function show(st) {
+        gs.set(c.box, { x: st.x - c.w / 2, y: st.y - c.h / 2 });
+        gs.set(c.img, { rotation: st.r });
+        if (cx) mark(cx, c, prev, st);
+        prev = st;
+      }
+      var start = 0.1 + k * STEP, m = { a: 0, t: 0 };
+      if (!spun) {
+        tl.to(m, { a: spin, duration: SPIN, ease: 'power2.out', onUpdate: function () { show({ x: x0, y: y0, r: r0 + m.a }); } }, start);
+      }
+      var driveAt = start + (spun ? 0 : SPIN + GAP);
+      tl.to(m, { t: 1, duration: DRIVE, ease: 'power2.in', onUpdate: function () {
+        var p = bez(m.t), d = tan(m.t), th = Math.atan2(d[0], -d[1]) * 180 / Math.PI;
+        var slide = sg * (DRIFT + 30 * side) * Math.sin(Math.PI * m.t);   // nose points into the turn more than the car travels: the rear slides out
+        show({ x: p[0], y: p[1], r: rEnd + ((th - rEnd + 540) % 360 + 360) % 360 - 180 + slide });
+      } }, driveAt);
+      lastEnd = Math.max(lastEnd, driveAt + DRIVE);
     });
-    var end = 0.1 + (n - 1) * 0.14 + 0.6 + 0.5;
-    tl.add(function () { root.classList.remove('gated'); }, Math.max(0.5, end - 0.9));        // page now sits under the floor
-    tl.to(bg, { autoAlpha: 0, duration: 0.7, ease: 'power2.inOut' }, Math.max(0.5, end - 0.9));
+
+    var fade = Math.max(0.5, lastEnd - 0.9);
+    tl.add(function () { root.classList.remove('gated'); }, fade);        // page now sits under the floor
+    tl.to(cx ? [bg, cv] : bg, { autoAlpha: 0, duration: 0.7, ease: 'power2.inOut' }, fade);
     tl.add(restartLights, '>-0.3');
   }
 
